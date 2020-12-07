@@ -18,7 +18,7 @@ class PhotoEditor(QMainWindow):
         """
         Initialize the window and display its contents to the screen
         """
-        self.setFixedSize(650, 650)
+        self.setFixedSize(1000, 650)
         self.setWindowTitle('Document Scanner')
         self.centerMainWindow()
         self.createToolsDockWidget()
@@ -72,6 +72,7 @@ class PhotoEditor(QMainWindow):
         self.resize_act = QAction("Resize Half", self)
         self.resize_act.setStatusTip('Resize image to half the original size')
         self.resize_act.triggered.connect(self.resizeImageHalf)
+
         self.clear_act = QAction(
             QIcon('images/clear.png'), "Clear Image", self)
         self.clear_act.setShortcut("Ctrl+D")
@@ -137,6 +138,7 @@ class PhotoEditor(QMainWindow):
         self.rotate90.setMinimumSize(QSize(130, 40))
         self.rotate90.setStatusTip('Rotate image 90° clockwise')
         self.rotate90.clicked.connect(self.rotateImage90)
+
         self.rotate180 = QPushButton("Rotate 180°")
         self.rotate180.setMinimumSize(QSize(130, 40))
         self.rotate180.setStatusTip('Rotate image 180° clockwise')
@@ -156,6 +158,27 @@ class PhotoEditor(QMainWindow):
         self.resize_half.setMinimumSize(QSize(130, 40))
         self.resize_half.setStatusTip('Resize image to half the original size')
         self.resize_half.clicked.connect(self.resizeImageHalf)
+
+        self.first_corner = QPushButton("First Corner")
+        self.first_corner.setMinimumSize(QSize(130, 40))
+        self.first_corner.setStatusTip('Choose first corner')
+        self.first_corner.clicked.connect(lambda: 1)
+
+        self.second_corner = QPushButton("Second Corner")
+        self.second_corner.setMinimumSize(QSize(130, 40))
+        self.second_corner.setStatusTip('Choose second corner')
+        self.second_corner.clicked.connect(lambda: 1)
+
+        self.third_corner = QPushButton("Third Corner")
+        self.third_corner.setMinimumSize(QSize(130, 40))
+        self.third_corner.setStatusTip('Choose third corner')
+        self.third_corner.clicked.connect(lambda: 1)
+
+        self.fourth_corner = QPushButton("Fourth Corner")
+        self.fourth_corner.setMinimumSize(QSize(130, 40))
+        self.fourth_corner.setStatusTip('Choose fourth corner')
+        self.fourth_corner.clicked.connect(lambda: 1)
+
         # Set up vertical layout to contain all the push buttons
         dock_v_box = QVBoxLayout()
         dock_v_box.addWidget(self.rotate90)
@@ -165,6 +188,11 @@ class PhotoEditor(QMainWindow):
         dock_v_box.addWidget(self.flip_vertical)
         dock_v_box.addStretch(1)
         dock_v_box.addWidget(self.resize_half)
+        dock_v_box.addStretch(1)
+        dock_v_box.addWidget(self.first_corner)
+        dock_v_box.addWidget(self.second_corner)
+        dock_v_box.addWidget(self.third_corner)
+        dock_v_box.addWidget(self.fourth_corner)
         dock_v_box.addStretch(6)
         # Set the main layout for the QWidget, tools_contents,
         # then set the main widget of the dock widget
