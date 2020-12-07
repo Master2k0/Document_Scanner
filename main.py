@@ -19,7 +19,7 @@ class PhotoEditor(QMainWindow):
         Initialize the window and display its contents to the screen
         """
         self.setFixedSize(650, 650)
-        self.setWindowTitle('5.2 - Photo Editor GUI')
+        self.setWindowTitle('Document Scanner')
         self.centerMainWindow()
         self.createToolsDockWidget()
         self.createMenu()
@@ -36,15 +36,18 @@ class PhotoEditor(QMainWindow):
         self.open_act.setShortcut('Ctrl+O')
         self.open_act.setStatusTip('Open a new image')
         self.open_act.triggered.connect(self.openImage)
+        
         self.save_act = QAction(QIcon('images/save_file.png'), "Save", self)
         self.save_act.setShortcut('Ctrl+S')
         self.save_act.setStatusTip('Save image')
         self.save_act.triggered.connect(self.saveImage)
+        
         self.print_act = QAction(QIcon('images/print.png'), "Print", self)
         self.print_act.setShortcut('Ctrl+P')
         self.print_act.setStatusTip('Print image')
         self.print_act.triggered.connect(self.printImage)
         self.print_act.setEnabled(False)
+        
         self.exit_act = QAction(QIcon('images/exit.png'), 'Exit', self)
         self.exit_act.setShortcut('Ctrl+Q')
         self.exit_act.setStatusTip('Quit program')
@@ -53,15 +56,19 @@ class PhotoEditor(QMainWindow):
         self.rotate90_act = QAction("Rotate 90°", self)
         self.rotate90_act.setStatusTip('Rotate image 90° clockwise')
         self.rotate90_act.triggered.connect(self.rotateImage90)
+        
         self.rotate180_act = QAction("Rotate 180°", self)
         self.rotate180_act.setStatusTip('Rotate image 180° clockwise')
         self.rotate180_act.triggered.connect(self.rotateImage180)
+        
         self.flip_hor_act = QAction("Flip Horizontal", self)
         self.flip_hor_act.setStatusTip('Flip image across horizontal axis')
         self.flip_hor_act.triggered.connect(self.flipImageHorizontal)
+        
         self.flip_ver_act = QAction("Flip Vertical", self)
         self.flip_ver_act.setStatusTip('Flip image across vertical axis')
         self.flip_ver_act.triggered.connect(self.flipImageVertical)
+        
         self.resize_act = QAction("Resize Half", self)
         self.resize_act.setStatusTip('Resize image to half the original size')
         self.resize_act.triggered.connect(self.resizeImageHalf)
@@ -134,6 +141,7 @@ class PhotoEditor(QMainWindow):
         self.rotate180.setMinimumSize(QSize(130, 40))
         self.rotate180.setStatusTip('Rotate image 180° clockwise')
         self.rotate180.clicked.connect(self.rotateImage180)
+        
         self.flip_horizontal = QPushButton("Flip Horizontal")
         self.flip_horizontal.setMinimumSize(QSize(130, 40))
         self.flip_horizontal.setStatusTip('Flip image across horizontal axis')
@@ -143,6 +151,7 @@ class PhotoEditor(QMainWindow):
         self.flip_vertical.setMinimumSize(QSize(130, 40))
         self.flip_vertical.setStatusTip('Flip image across vertical axis')
         self.flip_vertical.clicked.connect(self.flipImageVertical)
+        
         self.resize_half = QPushButton("Resize Half")
         self.resize_half.setMinimumSize(QSize(130, 40))
         self.resize_half.setStatusTip('Resize image to half the original size')
