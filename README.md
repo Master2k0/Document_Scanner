@@ -1,1 +1,6 @@
-# Report-Computer_Vision
+# Document Scanner app
+
+# Members
+
+- Nguyễn Trường Thịnh
+- Trần Hoàng Sơn
