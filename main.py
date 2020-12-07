@@ -4,7 +4,7 @@ import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel,
                              QAction, QFileDialog, QDesktopWidget, QMessageBox, QSizePolicy, QToolBar,
                              QStatusBar, QDockWidget, QVBoxLayout, QPushButton)
-from PyQt5.QtGui import QIcon, QPixmap, QTransform, QPainter
+from PyQt5.QtGui import QCursor, QIcon, QPixmap, QTransform, QPainter
 from PyQt5.QtCore import Qt, QSize, QRect
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 
@@ -18,7 +18,8 @@ class PhotoEditor(QMainWindow):
         """
         Initialize the window and display its contents to the screen
         """
-        self.setFixedSize(1000, 650)
+        # self.setFixedSize(1000, 650)
+        self.setMinimumSize(1000, 650)
         self.setWindowTitle('Document Scanner')
         self.centerMainWindow()
         self.createToolsDockWidget()
@@ -36,18 +37,18 @@ class PhotoEditor(QMainWindow):
         self.open_act.setShortcut('Ctrl+O')
         self.open_act.setStatusTip('Open a new image')
         self.open_act.triggered.connect(self.openImage)
-        
+
         self.save_act = QAction(QIcon('images/save_file.png'), "Save", self)
         self.save_act.setShortcut('Ctrl+S')
         self.save_act.setStatusTip('Save image')
         self.save_act.triggered.connect(self.saveImage)
-        
+
         self.print_act = QAction(QIcon('images/print.png'), "Print", self)
         self.print_act.setShortcut('Ctrl+P')
         self.print_act.setStatusTip('Print image')
         self.print_act.triggered.connect(self.printImage)
         self.print_act.setEnabled(False)
-        
+
         self.exit_act = QAction(QIcon('images/exit.png'), 'Exit', self)
         self.exit_act.setShortcut('Ctrl+Q')
         self.exit_act.setStatusTip('Quit program')
@@ -56,22 +57,18 @@ class PhotoEditor(QMainWindow):
         self.rotate90_act = QAction("Rotate 90°", self)
         self.rotate90_act.setStatusTip('Rotate image 90° clockwise')
         self.rotate90_act.triggered.connect(self.rotateImage90)
-        
+
         self.rotate180_act = QAction("Rotate 180°", self)
         self.rotate180_act.setStatusTip('Rotate image 180° clockwise')
         self.rotate180_act.triggered.connect(self.rotateImage180)
-        
+
         self.flip_hor_act = QAction("Flip Horizontal", self)
         self.flip_hor_act.setStatusTip('Flip image across horizontal axis')
         self.flip_hor_act.triggered.connect(self.flipImageHorizontal)
-        
+
         self.flip_ver_act = QAction("Flip Vertical", self)
         self.flip_ver_act.setStatusTip('Flip image across vertical axis')
         self.flip_ver_act.triggered.connect(self.flipImageVertical)
-        
-        self.resize_act = QAction("Resize Half", self)
-        self.resize_act.setStatusTip('Resize image to half the original size')
-        self.resize_act.triggered.connect(self.resizeImageHalf)
 
         self.clear_act = QAction(
             QIcon('images/clear.png'), "Clear Image", self)
@@ -96,8 +93,6 @@ class PhotoEditor(QMainWindow):
         edit_menu.addSeparator()
         edit_menu.addAction(self.flip_hor_act)
         edit_menu.addAction(self.flip_ver_act)
-        edit_menu.addSeparator()
-        edit_menu.addAction(self.resize_act)
         edit_menu.addSeparator()
         edit_menu.addAction(self.clear_act)
         # Create view menu and add actions
@@ -143,7 +138,7 @@ class PhotoEditor(QMainWindow):
         self.rotate180.setMinimumSize(QSize(130, 40))
         self.rotate180.setStatusTip('Rotate image 180° clockwise')
         self.rotate180.clicked.connect(self.rotateImage180)
-        
+
         self.flip_horizontal = QPushButton("Flip Horizontal")
         self.flip_horizontal.setMinimumSize(QSize(130, 40))
         self.flip_horizontal.setStatusTip('Flip image across horizontal axis')
@@ -153,31 +148,26 @@ class PhotoEditor(QMainWindow):
         self.flip_vertical.setMinimumSize(QSize(130, 40))
         self.flip_vertical.setStatusTip('Flip image across vertical axis')
         self.flip_vertical.clicked.connect(self.flipImageVertical)
-        
-        self.resize_half = QPushButton("Resize Half")
-        self.resize_half.setMinimumSize(QSize(130, 40))
-        self.resize_half.setStatusTip('Resize image to half the original size')
-        self.resize_half.clicked.connect(self.resizeImageHalf)
 
         self.first_corner = QPushButton("First Corner")
         self.first_corner.setMinimumSize(QSize(130, 40))
         self.first_corner.setStatusTip('Choose first corner')
-        self.first_corner.clicked.connect(lambda: 1)
+        self.first_corner.clicked.connect(self.switchToFirstCorner)
 
         self.second_corner = QPushButton("Second Corner")
         self.second_corner.setMinimumSize(QSize(130, 40))
         self.second_corner.setStatusTip('Choose second corner')
-        self.second_corner.clicked.connect(lambda: 1)
+        self.second_corner.clicked.connect(self.switchToSecondCorner)
 
         self.third_corner = QPushButton("Third Corner")
         self.third_corner.setMinimumSize(QSize(130, 40))
         self.third_corner.setStatusTip('Choose third corner')
-        self.third_corner.clicked.connect(lambda: 1)
+        self.third_corner.clicked.connect(self.switchToThirdCorner)
 
         self.fourth_corner = QPushButton("Fourth Corner")
         self.fourth_corner.setMinimumSize(QSize(130, 40))
         self.fourth_corner.setStatusTip('Choose fourth corner')
-        self.fourth_corner.clicked.connect(lambda: 1)
+        self.fourth_corner.clicked.connect(self.switchToFourthCorner)
 
         # Set up vertical layout to contain all the push buttons
         dock_v_box = QVBoxLayout()
@@ -186,8 +176,6 @@ class PhotoEditor(QMainWindow):
         dock_v_box.addStretch(1)
         dock_v_box.addWidget(self.flip_horizontal)
         dock_v_box.addWidget(self.flip_vertical)
-        dock_v_box.addStretch(1)
-        dock_v_box.addWidget(self.resize_half)
         dock_v_box.addStretch(1)
         dock_v_box.addWidget(self.first_corner)
         dock_v_box.addWidget(self.second_corner)
@@ -210,7 +198,7 @@ class PhotoEditor(QMainWindow):
         self.image = QPixmap()
 
         self.image_label = QLabel()
-        self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setAlignment(Qt.AlignBaseline)
         self.image_label.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Ignored)
         self.setCentralWidget(self.image_label)
@@ -223,9 +211,10 @@ class PhotoEditor(QMainWindow):
         image_file, _ = QFileDialog.getOpenFileName(self, "Open Image", "",
                                                     "JPG Files (*.jpeg *jpg);; PNG Files (*.png);; Bitmap Files (*.bmp);;GIF Files(*.gif)")
         if image_file:
+            print(image_file)
             self.image = QPixmap(image_file)
-            self.image_label.setPixmap(self.image.scaled(self.image_label.size(),
-                                                         Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.image_label.setPixmap(self.image)#.scaled(self.image_label.size(),
+                                                   #      Qt.KeepAspectRatio, Qt.SmoothTransformation))
         else:
             QMessageBox.information(self, "Error",
                                     "Unable to open image.", QMessageBox.Ok)
@@ -353,22 +342,43 @@ class PhotoEditor(QMainWindow):
             # No image to flip
             pass
 
-    def resizeImageHalf(self):
-        """
-        Resize the image to half its current size.
-        """
-        if self.image.isNull() == False:
-            resize = QTransform().scale(0.5, 0.5)
-            pixmap = QPixmap(self.image)
-            resized = pixmap.transformed(resize)
-            self.image_label.setPixmap(resized.scaled(self.image_label.size(),
-                                                      Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            self.image = QPixmap(resized)
-            self.image_label.repaint()
+    
 
-        else:
-            # No image to resize
-            pass
+    def switchToFirstCorner(self):
+        self.image_label.mousePressEvent = self.setFirstCorner
+
+    def switchToSecondCorner(self):
+        self.image_label.mousePressEvent = self.setSecondCorner
+
+    def switchToThirdCorner(self):
+        self.image_label.mousePressEvent = self.setThirdCorner
+
+    def switchToFourthCorner(self):
+        self.image_label.mousePressEvent = self.setFourthCorner
+
+    def setFirstCorner(self, event):
+        self.first_corner_pos = event.pos()
+        # self.first_corner_pos = self.image_label.mapFromGlobal(
+        #     self.first_corner_pos)
+        print(self.first_corner_pos)
+
+    def setSecondCorner(self, event):
+        self.second_corner_pos = QCursor().pos()
+        self.second_corner_pos = self.image_label.mapFromGlobal(
+            self.second_corner_pos)
+        print(self.second_corner_pos)
+
+    def setThirdCorner(self, event):
+        self.third_corner_pos = QCursor().pos()
+        self.third_corner_pos = self.image_label.mapFromGlobal(
+            self.third_corner_pos)
+        print(self.third_corner_pos)
+
+    def setFourthCorner(self, event):
+        self.fourth_corner_pos = QCursor().pos()
+        self.fourth_corner_pos = self.image_label.mapFromGlobal(
+            self.fourth_corner_pos)
+        print(self.fourth_corner_pos)
 
     def centerMainWindow(self):
         """
