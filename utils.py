@@ -23,11 +23,13 @@ def transform(image: np.ndarray, qpoints: List[QPoint]):
     # qpoints[2]: bottom right corner
     # qpoints[3]: bottom left corner
 
+    # TODO: Sort corners
     original_corners = np.array([extract(qpoints[0]),
                                  extract(qpoints[1]),
                                  extract(qpoints[2]),
                                  extract(qpoints[3])], dtype=np.float32)
 
+    # TODO: Automatically choose width, height for new_image
     height = 1000   
     width = 700
 
@@ -39,7 +41,7 @@ def transform(image: np.ndarray, qpoints: List[QPoint]):
     transform_matrix = cv2.getPerspectiveTransform(original_corners, new_corners)    
 
     new_image = cv2.warpPerspective(image, transform_matrix, (width, height))
-
+    # TODO: increase contrast of new_image
     return new_image
 
 # if __name__ == "__main__":
