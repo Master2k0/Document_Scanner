@@ -153,24 +153,27 @@ class PhotoEditor(QMainWindow):
         self.flip_vertical.setStatusTip('Flip image across vertical axis')
         self.flip_vertical.clicked.connect(self.flipImageVertical)
 
-        self.first_corner_btn = QPushButton("First Corner")
+        # Select top left corner
+        self.first_corner_btn = QPushButton("Top Left")
         self.first_corner_btn.setMinimumSize(QSize(130, 40))
-        self.first_corner_btn.setStatusTip('Choose first corner')
+        self.first_corner_btn.setStatusTip('Choose top left corner')
         self.first_corner_btn.clicked.connect(self.switchToFirstCorner)
 
-        self.second_corner_btn = QPushButton("Second Corner")
+        # Select top right corner
+        self.second_corner_btn = QPushButton("Top Right")
         self.second_corner_btn.setMinimumSize(QSize(130, 40))
-        self.second_corner_btn.setStatusTip('Choose second corner')
+        self.second_corner_btn.setStatusTip('Choose top right corner')
         self.second_corner_btn.clicked.connect(self.switchToSecondCorner)
-
-        self.third_corner_btn = QPushButton("Third Corner")
+        # Select bottom right corner
+        self.third_corner_btn = QPushButton("Bottom Right")
         self.third_corner_btn.setMinimumSize(QSize(130, 40))
-        self.third_corner_btn.setStatusTip('Choose third corner')
+        self.third_corner_btn.setStatusTip('Choose bottom right corner')
         self.third_corner_btn.clicked.connect(self.switchToThirdCorner)
 
-        self.fourth_corner_btn = QPushButton("Fourth Corner")
+        # Select bottom left corner
+        self.fourth_corner_btn = QPushButton("Bottom Left")
         self.fourth_corner_btn.setMinimumSize(QSize(130, 40))
-        self.fourth_corner_btn.setStatusTip('Choose fourth corner')
+        self.fourth_corner_btn.setStatusTip('Choose bottom left corner')
         self.fourth_corner_btn.clicked.connect(self.switchToFourthCorner)
 
         # Set up vertical layout to contain all the push buttons
