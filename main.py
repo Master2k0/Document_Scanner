@@ -218,20 +218,20 @@ class PhotoEditor(QMainWindow):
                                                      Bitmap Files (*.bmp);; \
                                                      GIF Files(*.gif)")
         if image_path:
-            # use self.image_matrix with opencv 
+            # use self.image_matrix with opencv
             self.image_matrix: np.ndarray = cv2.imread(image_path)
             if self.image_matrix is None:
-                QMessageBox.information(self, "Error", 
+                QMessageBox.information(self, "Error",
                                         "Unable to read image to OpenCV.", QMessageBox.Ok)
 
             # scale the image to display
             self.image = QPixmap(image_path).scaled(self.image_label.size(),
                                                     Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            
+
             # get scale ratio
             original_height: int = self.image_matrix.shape[0]
             self.scale_ratio: float = original_height / self.image.height()
-            
+
             # show the image on screen
             self.image_label.setPixmap(self.image)
 
@@ -242,7 +242,7 @@ class PhotoEditor(QMainWindow):
         else:
             QMessageBox.information(self, "Error",
                                     "Unable to open image.", QMessageBox.Ok)
-        
+
         self.print_act.setEnabled(True)
 
     def saveImage(self):
@@ -367,8 +367,6 @@ class PhotoEditor(QMainWindow):
             # No image to flip
             pass
 
-    
-
     def switchToFirstCorner(self):
         self.corner_idx = 0
 
@@ -386,6 +384,7 @@ class PhotoEditor(QMainWindow):
         original_x = int(round(tmp_pos.x() * self.scale_ratio))
         original_y = int(round(tmp_pos.y() * self.scale_ratio))
         self.corner_points[self.corner_idx] = QPoint(original_x, original_y)
+        print(self.corner_points[self.corner_idx])
 
     def centerMainWindow(self):
         """
