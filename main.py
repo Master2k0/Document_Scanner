@@ -1,11 +1,16 @@
-# photo_editor.py
-# Import necessary modules
+# main.py
+
 import sys
+from typing import List
+
+import numpy as np
+import cv2
+
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel,
                              QAction, QFileDialog, QDesktopWidget, QMessageBox, QSizePolicy, QToolBar,
                              QStatusBar, QDockWidget, QVBoxLayout, QPushButton)
 from PyQt5.QtGui import QCursor, QIcon, QPixmap, QTransform, QPainter
-from PyQt5.QtCore import Qt, QSize, QRect
+from PyQt5.QtCore import QPoint, Qt, QSize, QRect
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 
 
@@ -18,8 +23,7 @@ class PhotoEditor(QMainWindow):
         """
         Initialize the window and display its contents to the screen
         """
-        # self.setFixedSize(1000, 650)
-        self.setMinimumSize(1000, 650)
+        self.setMinimumSize(720, 500)
         self.setWindowTitle('Document Scanner')
         self.centerMainWindow()
         self.createToolsDockWidget()
@@ -149,25 +153,25 @@ class PhotoEditor(QMainWindow):
         self.flip_vertical.setStatusTip('Flip image across vertical axis')
         self.flip_vertical.clicked.connect(self.flipImageVertical)
 
-        self.first_corner = QPushButton("First Corner")
-        self.first_corner.setMinimumSize(QSize(130, 40))
-        self.first_corner.setStatusTip('Choose first corner')
-        self.first_corner.clicked.connect(self.switchToFirstCorner)
+        self.first_corner_btn = QPushButton("First Corner")
+        self.first_corner_btn.setMinimumSize(QSize(130, 40))
+        self.first_corner_btn.setStatusTip('Choose first corner')
+        self.first_corner_btn.clicked.connect(self.switchToFirstCorner)
 
-        self.second_corner = QPushButton("Second Corner")
-        self.second_corner.setMinimumSize(QSize(130, 40))
-        self.second_corner.setStatusTip('Choose second corner')
-        self.second_corner.clicked.connect(self.switchToSecondCorner)
+        self.second_corner_btn = QPushButton("Second Corner")
+        self.second_corner_btn.setMinimumSize(QSize(130, 40))
+        self.second_corner_btn.setStatusTip('Choose second corner')
+        self.second_corner_btn.clicked.connect(self.switchToSecondCorner)
 
-        self.third_corner = QPushButton("Third Corner")
-        self.third_corner.setMinimumSize(QSize(130, 40))
-        self.third_corner.setStatusTip('Choose third corner')
-        self.third_corner.clicked.connect(self.switchToThirdCorner)
+        self.third_corner_btn = QPushButton("Third Corner")
+        self.third_corner_btn.setMinimumSize(QSize(130, 40))
+        self.third_corner_btn.setStatusTip('Choose third corner')
+        self.third_corner_btn.clicked.connect(self.switchToThirdCorner)
 
-        self.fourth_corner = QPushButton("Fourth Corner")
-        self.fourth_corner.setMinimumSize(QSize(130, 40))
-        self.fourth_corner.setStatusTip('Choose fourth corner')
-        self.fourth_corner.clicked.connect(self.switchToFourthCorner)
+        self.fourth_corner_btn = QPushButton("Fourth Corner")
+        self.fourth_corner_btn.setMinimumSize(QSize(130, 40))
+        self.fourth_corner_btn.setStatusTip('Choose fourth corner')
+        self.fourth_corner_btn.clicked.connect(self.switchToFourthCorner)
 
         # Set up vertical layout to contain all the push buttons
         dock_v_box = QVBoxLayout()
@@ -177,10 +181,10 @@ class PhotoEditor(QMainWindow):
         dock_v_box.addWidget(self.flip_horizontal)
         dock_v_box.addWidget(self.flip_vertical)
         dock_v_box.addStretch(1)
-        dock_v_box.addWidget(self.first_corner)
-        dock_v_box.addWidget(self.second_corner)
-        dock_v_box.addWidget(self.third_corner)
-        dock_v_box.addWidget(self.fourth_corner)
+        dock_v_box.addWidget(self.first_corner_btn)
+        dock_v_box.addWidget(self.second_corner_btn)
+        dock_v_box.addWidget(self.third_corner_btn)
+        dock_v_box.addWidget(self.fourth_corner_btn)
         dock_v_box.addStretch(6)
         # Set the main layout for the QWidget, tools_contents,
         # then set the main widget of the dock widget
@@ -208,16 +212,37 @@ class PhotoEditor(QMainWindow):
         Open an image file and display its contents in label widget.
         Display error message if image can't be opened.
         """
-        image_file, _ = QFileDialog.getOpenFileName(self, "Open Image", "",
-                                                    "JPG Files (*.jpeg *jpg);; PNG Files (*.png);; Bitmap Files (*.bmp);;GIF Files(*.gif)")
-        if image_file:
-            print(image_file)
-            self.image = QPixmap(image_file)
-            self.image_label.setPixmap(self.image)#.scaled(self.image_label.size(),
-                                                   #      Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        image_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "",
+                                                    "JPG Files (*.jpeg *jpg);; \
+                                                     PNG Files (*.png);; \
+                                                     Bitmap Files (*.bmp);; \
+                                                     GIF Files(*.gif)")
+        if image_path:
+            # use self.image_matrix with opencv 
+            self.image_matrix: np.ndarray = cv2.imread(image_path)
+            if self.image_matrix is None:
+                QMessageBox.information(self, "Error", 
+                                        "Unable to read image to OpenCV.", QMessageBox.Ok)
+
+            # scale the image to display
+            self.image = QPixmap(image_path).scaled(self.image_label.size(),
+                                                    Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            
+            # get scale ratio
+            original_height: int = self.image_matrix.shape[0]
+            self.scale_ratio: float = original_height / self.image.height()
+            
+            # show the image on screen
+            self.image_label.setPixmap(self.image)
+
+            # self
+            self.image_label.mousePressEvent = self.selectCorner
+            self.corner_points: List[QPoint] = [None] * 4
+            self.corner_idx: int = 0
         else:
             QMessageBox.information(self, "Error",
                                     "Unable to open image.", QMessageBox.Ok)
+        
         self.print_act.setEnabled(True)
 
     def saveImage(self):
@@ -345,40 +370,22 @@ class PhotoEditor(QMainWindow):
     
 
     def switchToFirstCorner(self):
-        self.image_label.mousePressEvent = self.setFirstCorner
+        self.corner_idx = 0
 
     def switchToSecondCorner(self):
-        self.image_label.mousePressEvent = self.setSecondCorner
+        self.corner_idx = 1
 
     def switchToThirdCorner(self):
-        self.image_label.mousePressEvent = self.setThirdCorner
+        self.corner_idx = 2
 
     def switchToFourthCorner(self):
-        self.image_label.mousePressEvent = self.setFourthCorner
+        self.corner_idx = 3
 
-    def setFirstCorner(self, event):
-        self.first_corner_pos = event.pos()
-        # self.first_corner_pos = self.image_label.mapFromGlobal(
-        #     self.first_corner_pos)
-        print(self.first_corner_pos)
-
-    def setSecondCorner(self, event):
-        self.second_corner_pos = QCursor().pos()
-        self.second_corner_pos = self.image_label.mapFromGlobal(
-            self.second_corner_pos)
-        print(self.second_corner_pos)
-
-    def setThirdCorner(self, event):
-        self.third_corner_pos = QCursor().pos()
-        self.third_corner_pos = self.image_label.mapFromGlobal(
-            self.third_corner_pos)
-        print(self.third_corner_pos)
-
-    def setFourthCorner(self, event):
-        self.fourth_corner_pos = QCursor().pos()
-        self.fourth_corner_pos = self.image_label.mapFromGlobal(
-            self.fourth_corner_pos)
-        print(self.fourth_corner_pos)
+    def selectCorner(self, event):
+        tmp_pos: QPoint = event.pos()
+        original_x = int(round(tmp_pos.x() * self.scale_ratio))
+        original_y = int(round(tmp_pos.y() * self.scale_ratio))
+        self.corner_points[self.corner_idx] = QPoint(original_x, original_y)
 
     def centerMainWindow(self):
         """
@@ -388,13 +395,12 @@ class PhotoEditor(QMainWindow):
         desktop = QDesktopWidget().screenGeometry()
         screen_width = desktop.width()
         screen_height = desktop.height()
-        self.move((screen_width - self.width()) / 2,
-                  (screen_height - self.height()) / 2)
+        self.move((screen_width - self.width()) // 2,
+                  (screen_height - self.height()) // 2)
 
 
 # Run program
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    app.setAttribute(Qt.AA_DontShowIconsInMenus, True)
     window = PhotoEditor()
     sys.exit(app.exec_())
