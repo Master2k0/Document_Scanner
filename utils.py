@@ -29,6 +29,8 @@ def extract(point: QPoint) -> np.ndarray:
     """
     return np.array([point.x(), point.y()])
 
+def manhattan(a, b):
+    return np.abs(b - a).sum()
 
 def transform(image: np.ndarray, qpoints: List[QPoint]):
     """
@@ -53,8 +55,10 @@ def transform(image: np.ndarray, qpoints: List[QPoint]):
                                  extract(qpoints[3])], dtype=np.float32)
 
     # TODO: Automatically choose width, height for new_image
-    height = np.linalg.norm(original_corners[3] - original_corners[0])
-    width = np.linalg.norm(original_corners[1] - original_corners[0])
+    # height = np.linalg.norm(original_corners[3] - original_corners[0])
+    # width = np.linalg.norm(original_corners[1] - original_corners[0])
+    height = manhattan(original_corners[3], original_corners[0])
+    width = manhattan(original_corners[1], original_corners[0])
 
     new_corners = np.array([[0, 0],
                             [width, 0],

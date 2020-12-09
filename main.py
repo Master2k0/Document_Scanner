@@ -29,7 +29,7 @@ class PhotoEditor(QMainWindow):
         self.centerMainWindow()
         self.createToolsDockWidget()
         self.createMenu()
-        # self.createToolBar()
+        self.createToolBar()
         self.photoEditorWidgets()
         self.show()
 
@@ -38,26 +38,27 @@ class PhotoEditor(QMainWindow):
         Create menu for photo editor GUI
         """
         # Create actions for file menu
-        self.open_act = QAction(QIcon('images/open_file.png'), "Open", self)
+        self.open_act = QAction(QIcon('icons/file.svg'), "Open", self)
         self.open_act.setShortcut('Ctrl+O')
         self.open_act.setStatusTip('Open a new image')
         self.open_act.triggered.connect(self.openImage)
 
-        self.save_act = QAction(QIcon('images/save_file.png'), "Save", self)
+        self.save_act = QAction(QIcon('icons/save.svg'), "Save", self)
         self.save_act.setShortcut('Ctrl+S')
         self.save_act.setStatusTip('Save image')
         self.save_act.triggered.connect(self.saveImage)
 
-        self.print_act = QAction(QIcon('images/print.png'), "Print", self)
-        self.print_act.setShortcut('Ctrl+P')
-        self.print_act.setStatusTip('Print image')
-        self.print_act.triggered.connect(self.printImage)
-        self.print_act.setEnabled(False)
+        # self.print_act = QAction(QIcon('images/print.png'), "Print", self)
+        # self.print_act.setShortcut('Ctrl+P')
+        # self.print_act.setStatusTip('Print image')
+        # self.print_act.triggered.connect(self.printImage)
+        # self.print_act.setEnabled(False)
 
-        self.exit_act = QAction(QIcon('images/exit.png'), 'Exit', self)
+        self.exit_act = QAction(QIcon('icons/close.svg'), 'Exit', self)
         self.exit_act.setShortcut('Ctrl+Q')
         self.exit_act.setStatusTip('Quit program')
         self.exit_act.triggered.connect(self.close)
+
         # Create actions for edit menu
         self.rotate90_act = QAction("Rotate 90°", self)
         self.rotate90_act.setStatusTip('Rotate image 90° clockwise')
@@ -76,7 +77,7 @@ class PhotoEditor(QMainWindow):
         self.flip_ver_act.triggered.connect(self.flipImageVertical)
 
         self.clear_act = QAction(
-            QIcon('images/clear.png'), "Clear Image", self)
+            QIcon('icons/recycling-bin.svg'), "Clear Image", self)
         self.clear_act.setShortcut("Ctrl+D")
         self.clear_act.setStatusTip('Clear the current image')
         self.clear_act.triggered.connect(self.clearImage)
@@ -87,8 +88,6 @@ class PhotoEditor(QMainWindow):
         file_menu = menu_bar.addMenu('File')
         file_menu.addAction(self.open_act)
         file_menu.addAction(self.save_act)
-        file_menu.addSeparator()
-        file_menu.addAction(self.print_act)
         file_menu.addSeparator()
         file_menu.addAction(self.exit_act)
         # Create edit menu and add actions
@@ -116,7 +115,6 @@ class PhotoEditor(QMainWindow):
         # Add actions to toolbar
         tool_bar.addAction(self.open_act)
         tool_bar.addAction(self.save_act)
-        tool_bar.addAction(self.print_act)
         tool_bar.addAction(self.clear_act)
         tool_bar.addSeparator()
         tool_bar.addAction(self.exit_act)
@@ -230,7 +228,8 @@ class PhotoEditor(QMainWindow):
         self.show_image(self.image_matrix)
 
     def show_transformed(self):
-        self.transformed_image = transform(self.image_matrix, self.corner_points)
+        self.transformed_image = transform(
+            self.image_matrix, self.corner_points)
         self.show_image(self.transformed_image)
 
     def show_image(self, image_matrix: np.ndarray):
@@ -246,10 +245,7 @@ class PhotoEditor(QMainWindow):
         # show the image on screen
         self.image_label.setPixmap(self.image)
 
-        # self
         self.image_label.mousePressEvent = self.selectCorner
-        self.corner_points: List[QPoint] = [None] * 4
-        self.corner_idx: int = 0
 
     def openImage(self):
         """
@@ -267,7 +263,8 @@ class PhotoEditor(QMainWindow):
             if self.image_matrix is None:
                 QMessageBox.information(self, "Error",
                                         "Unable to read image to OpenCV.", QMessageBox.Ok)
-
+            self.corner_points: List[QPoint] = [None] * 4
+            self.corner_idx: int = 0
             self.show_image(self.image_matrix)
         else:
             QMessageBox.information(self, "Error",
