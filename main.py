@@ -2,6 +2,7 @@
 
 import sys
 from typing import List
+from utils import convert_ndarray_to_QPixmap, transform
 
 import numpy as np
 import cv2
@@ -176,6 +177,18 @@ class PhotoEditor(QMainWindow):
         self.fourth_corner_btn.setStatusTip('Choose bottom left corner')
         self.fourth_corner_btn.clicked.connect(self.switchToFourthCorner)
 
+        # Original image
+        self.original_image_btn = QPushButton("Original")
+        self.original_image_btn.setMinimumSize(QSize(130, 40))
+        self.original_image_btn.setStatusTip("Show original image")
+        self.original_image_btn.clicked.connect(self.show_original)
+
+        # Show transformed image
+        self.transformed_image_btn = QPushButton("Transform")
+        self.transformed_image_btn.setMinimumSize(QSize(130, 40))
+        self.transformed_image_btn.setStatusTip("Show transformed image")
+        self.transformed_image_btn.clicked.connect(self.show_transformed)
+
         # Set up vertical layout to contain all the push buttons
         dock_v_box = QVBoxLayout()
         dock_v_box.addWidget(self.rotate90)
@@ -188,6 +201,9 @@ class PhotoEditor(QMainWindow):
         dock_v_box.addWidget(self.second_corner_btn)
         dock_v_box.addWidget(self.third_corner_btn)
         dock_v_box.addWidget(self.fourth_corner_btn)
+        dock_v_box.addStretch(1)
+        dock_v_box.addWidget(self.original_image_btn)
+        dock_v_box.addWidget(self.transformed_image_btn)
         dock_v_box.addStretch(6)
         # Set the main layout for the QWidget, tools_contents,
         # then set the main widget of the dock widget
@@ -210,6 +226,31 @@ class PhotoEditor(QMainWindow):
             QSizePolicy.Expanding, QSizePolicy.Ignored)
         self.setCentralWidget(self.image_label)
 
+    def show_original(self):
+        self.show_image(self.image_matrix)
+
+    def show_transformed(self):
+        self.transformed_image = transform(self.image_matrix, self.corner_points)
+        self.show_image(self.transformed_image)
+
+    def show_image(self, image_matrix: np.ndarray):
+        # scale the image to display
+        self.image = convert_ndarray_to_QPixmap(image_matrix)
+        self.image = self.image.scaled(
+            self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        # get scale ratio
+        original_height: int = image_matrix.shape[0]
+        self.scale_ratio: float = original_height / self.image.height()
+
+        # show the image on screen
+        self.image_label.setPixmap(self.image)
+
+        # self
+        self.image_label.mousePressEvent = self.selectCorner
+        self.corner_points: List[QPoint] = [None] * 4
+        self.corner_idx: int = 0
+
     def openImage(self):
         """
         Open an image file and display its contents in label widget.
@@ -227,21 +268,7 @@ class PhotoEditor(QMainWindow):
                 QMessageBox.information(self, "Error",
                                         "Unable to read image to OpenCV.", QMessageBox.Ok)
 
-            # scale the image to display
-            self.image = QPixmap(image_path).scaled(self.image_label.size(),
-                                                    Qt.KeepAspectRatio, Qt.SmoothTransformation)
-
-            # get scale ratio
-            original_height: int = self.image_matrix.shape[0]
-            self.scale_ratio: float = original_height / self.image.height()
-
-            # show the image on screen
-            self.image_label.setPixmap(self.image)
-
-            # self
-            self.image_label.mousePressEvent = self.selectCorner
-            self.corner_points: List[QPoint] = [None] * 4
-            self.corner_idx: int = 0
+            self.show_image(self.image_matrix)
         else:
             QMessageBox.information(self, "Error",
                                     "Unable to open image.", QMessageBox.Ok)
