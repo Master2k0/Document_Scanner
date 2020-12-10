@@ -48,31 +48,24 @@ class PhotoEditor(QMainWindow):
         self.save_act.setStatusTip('Save image')
         self.save_act.triggered.connect(self.saveImage)
 
-        # self.print_act = QAction(QIcon('images/print.png'), "Print", self)
-        # self.print_act.setShortcut('Ctrl+P')
-        # self.print_act.setStatusTip('Print image')
-        # self.print_act.triggered.connect(self.printImage)
-        # self.print_act.setEnabled(False)
-
         self.exit_act = QAction(QIcon('icons/close.svg'), 'Exit', self)
         self.exit_act.setShortcut('Ctrl+Q')
         self.exit_act.setStatusTip('Quit program')
         self.exit_act.triggered.connect(self.close)
 
         # Create actions for edit menu
-        self.rotate90_act = QAction("Rotate 90°", self)
+        self.rotate90_act = QAction(
+            QIcon('icons/rotate.svg'), "Rotate 90°", self)
         self.rotate90_act.setStatusTip('Rotate image 90° clockwise')
         self.rotate90_act.triggered.connect(self.rotateImage90)
 
-        self.rotate180_act = QAction("Rotate 180°", self)
-        self.rotate180_act.setStatusTip('Rotate image 180° clockwise')
-        self.rotate180_act.triggered.connect(self.rotateImage180)
-
-        self.flip_hor_act = QAction("Flip Horizontal", self)
+        self.flip_hor_act = QAction(
+            QIcon('icons/flip-hor.svg'), "Flip Horizontal", self)
         self.flip_hor_act.setStatusTip('Flip image across horizontal axis')
         self.flip_hor_act.triggered.connect(self.flipImageHorizontal)
 
-        self.flip_ver_act = QAction("Flip Vertical", self)
+        self.flip_ver_act = QAction(
+            QIcon('icons/flip-ver.svg'), "Flip Vertical", self)
         self.flip_ver_act.setStatusTip('Flip image across vertical axis')
         self.flip_ver_act.triggered.connect(self.flipImageVertical)
 
@@ -93,7 +86,6 @@ class PhotoEditor(QMainWindow):
         # Create edit menu and add actions
         edit_menu = menu_bar.addMenu('Edit')
         edit_menu.addAction(self.rotate90_act)
-        edit_menu.addAction(self.rotate180_act)
         edit_menu.addSeparator()
         edit_menu.addAction(self.flip_hor_act)
         edit_menu.addAction(self.flip_ver_act)
@@ -112,10 +104,15 @@ class PhotoEditor(QMainWindow):
         tool_bar = QToolBar("Photo Editor Toolbar")
         tool_bar.setIconSize(QSize(24, 24))
         self.addToolBar(tool_bar)
+
         # Add actions to toolbar
         tool_bar.addAction(self.open_act)
         tool_bar.addAction(self.save_act)
         tool_bar.addAction(self.clear_act)
+        tool_bar.addSeparator()
+        tool_bar.addAction(self.rotate90_act)
+        tool_bar.addAction(self.flip_hor_act)
+        tool_bar.addAction(self.flip_ver_act)
         tool_bar.addSeparator()
         tool_bar.addAction(self.exit_act)
 
@@ -132,25 +129,6 @@ class PhotoEditor(QMainWindow):
         # Create container QWidget to hold all widgets inside dock widget
         self.tools_contents = QWidget()
         # Create tool push buttons
-        self.rotate90 = QPushButton("Rotate 90°")
-        self.rotate90.setMinimumSize(QSize(130, 40))
-        self.rotate90.setStatusTip('Rotate image 90° clockwise')
-        self.rotate90.clicked.connect(self.rotateImage90)
-
-        self.rotate180 = QPushButton("Rotate 180°")
-        self.rotate180.setMinimumSize(QSize(130, 40))
-        self.rotate180.setStatusTip('Rotate image 180° clockwise')
-        self.rotate180.clicked.connect(self.rotateImage180)
-
-        self.flip_horizontal = QPushButton("Flip Horizontal")
-        self.flip_horizontal.setMinimumSize(QSize(130, 40))
-        self.flip_horizontal.setStatusTip('Flip image across horizontal axis')
-        self.flip_horizontal.clicked.connect(self.flipImageHorizontal)
-
-        self.flip_vertical = QPushButton("Flip Vertical")
-        self.flip_vertical.setMinimumSize(QSize(130, 40))
-        self.flip_vertical.setStatusTip('Flip image across vertical axis')
-        self.flip_vertical.clicked.connect(self.flipImageVertical)
 
         # Select top left corner
         self.first_corner_btn = QPushButton("Top Left")
@@ -189,12 +167,6 @@ class PhotoEditor(QMainWindow):
 
         # Set up vertical layout to contain all the push buttons
         dock_v_box = QVBoxLayout()
-        dock_v_box.addWidget(self.rotate90)
-        dock_v_box.addWidget(self.rotate180)
-        dock_v_box.addStretch(1)
-        dock_v_box.addWidget(self.flip_horizontal)
-        dock_v_box.addWidget(self.flip_vertical)
-        dock_v_box.addStretch(1)
         dock_v_box.addWidget(self.first_corner_btn)
         dock_v_box.addWidget(self.second_corner_btn)
         dock_v_box.addWidget(self.third_corner_btn)
@@ -203,6 +175,7 @@ class PhotoEditor(QMainWindow):
         dock_v_box.addWidget(self.original_image_btn)
         dock_v_box.addWidget(self.transformed_image_btn)
         dock_v_box.addStretch(6)
+
         # Set the main layout for the QWidget, tools_contents,
         # then set the main widget of the dock widget
         self.tools_contents.setLayout(dock_v_box)
@@ -270,8 +243,6 @@ class PhotoEditor(QMainWindow):
             QMessageBox.information(self, "Error",
                                     "Unable to open image.", QMessageBox.Ok)
 
-        self.print_act.setEnabled(True)
-
     def saveImage(self):
         """
         Save the image.
@@ -337,25 +308,6 @@ class PhotoEditor(QMainWindow):
                 transform90, mode=Qt.SmoothTransformation)
             self.image_label.setPixmap(rotated.scaled(self.image_label.size(),
                                                       Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            self.image = QPixmap(rotated)
-            self.image_label.repaint()  # repaint the child widget
-        else:
-            # No image to rotate
-            pass
-
-    def rotateImage180(self):
-        """
-        Rotate image 180° clockwise
-        """
-        if self.image.isNull() == False:
-            transform180 = QTransform().rotate(180)
-            pixmap = QPixmap(self.image)
-            rotated = pixmap.transformed(transform180, mode=Qt.
-                                         SmoothTransformation)
-            self.image_label.setPixmap(rotated.scaled(self.image_label.
-                                                      size(),
-                                                      Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            # In order to keep being allowed to rotate the image, set the rotated image as self.image
             self.image = QPixmap(rotated)
             self.image_label.repaint()  # repaint the child widget
         else:
