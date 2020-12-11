@@ -106,17 +106,14 @@ class PhotoEditor(QMainWindow):
         # Set up vertical layout to contain all the push buttons
         dock_v_box = QVBoxLayout()
 
-        edit_btn = QPushButton("Edit Mode")
-        edit_btn.setMinimumSize(QSize(130, 40))
-        edit_btn.setStatusTip("Edit image mode")
-        edit_btn.clicked.connect(lambda: 2)  # TODO
-        dock_v_box.addWidget(edit_btn)
+        # Add buttons
 
-        crop_btn = QPushButton("Preview Mode")
-        crop_btn.setMinimumSize(QSize(130, 40))
-        crop_btn.setStatusTip("Document image")
-        crop_btn.clicked.connect(lambda: 2)  # TODO
-        dock_v_box.addWidget(crop_btn)
+        # Switch between edit and preview mode
+        self.switch_mode_btn = QPushButton("Edit Mode")
+        self.switch_mode_btn.setMinimumSize(QSize(130, 40))
+        self.switch_mode_btn.setStatusTip("Edit image mode")
+        self.switch_mode_btn.clicked.connect(self.switchMode)  # TODO
+        dock_v_box.addWidget(self.switch_mode_btn)
 
         dock_v_box.addStretch(1)
 
@@ -211,17 +208,22 @@ class PhotoEditor(QMainWindow):
                                                      GIF Files(*.gif) \
                                                      All Files (*.*)")
         if not image_path:
+            # If no file is selected then skip
             return
 
         self.image_mat: np.ndarray = cv2.imread(image_path)
+
+        if self.image_mat is None:
+            message = "Unable to open image"
+            QMessageBox.information(self, "Error", message, QMessageBox.Ok)
+            return
+
         self.final_mat: np.ndarray = self.image_mat.copy()
         self.initCornersPoint()
 
-        if self.image_mat is None:
-            QMessageBox.information(self, "Error",
-                                    "Unable to open image", QMessageBox.Ok)
+        self.is_edit_mode: bool = False
+        self.switchMode()
 
-        self.showImage()
 
     def saveImage(self):
         """
@@ -239,8 +241,19 @@ class PhotoEditor(QMainWindow):
             QMessageBox.information(self, "Error",
                                     "Unable to save image.", QMessageBox.Ok)
 
+    def switchMode(self):
+        self.is_edit_mode = not self.is_edit_mode
+
+        if self.is_edit_mode:
+            self.switch_mode_btn.setText("Edit Mode")
+            self.switch_mode_btn.setStatusTip("Edit image mode")
+        else:
+            self.switch_mode_btn.setText("Preview Mode")
+            self.switch_mode_btn.setStatusTip("Preview result mode")
+
+        self.showImage()
+
     def showImage(self):
-        return
         image_matrix = self.image_mat if self.show_original else self.final_mat
 
         image_matrix = draw_circle_around_corners(
@@ -268,7 +281,11 @@ class PhotoEditor(QMainWindow):
         self.image = QPixmap()  # reset pixmap so that isNull() = True
 
     def initCornersPoint(self):
-        self.corner_points: List[QPoint] = [None] * 4
+        h, w = self.image_mat.shape[:2]
+        self.corners: np.ndarray = np.array([[0, 0],
+                                             [w, 0],
+                                             [w, h],
+                                             [0, h]], dtype=np.float32)
         self.corner_idx: int = 0
 
     def restoreImage(self):
@@ -325,8 +342,8 @@ class PhotoEditor(QMainWindow):
         tmp_pos: QPoint = event.pos()
         original_x = int(round(tmp_pos.x() * self.scale_ratio))
         original_y = int(round(tmp_pos.y() * self.scale_ratio))
-        self.corner_points[self.corner_idx] = QPoint(original_x, original_y)
-        print(self.corner_points[self.corner_idx])
+        self.corners[self.corner_idx] = QPoint(original_x, original_y)
+        print(self.corners[self.corner_idx])
         self.showImage()
 
     def centerMainWindow(self):

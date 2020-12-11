@@ -21,13 +21,6 @@ def convert_ndarray_to_QPixmap(image_matrix: np.ndarray) -> QImage:
     return QPixmap.fromImage(qImg)
 
 
-def extract(point: QPoint) -> np.ndarray:
-    """
-    Convert PyQt5.QtCore.QPoint into tuple of (row, column)
-    """
-    return np.array([point.x(), point.y()])
-
-
 def manhattan(a, b):
     return np.abs(b - a).sum()
 
@@ -64,12 +57,12 @@ def draw_circle_around_corners(image: np.ndarray, qpoints: List[QPoint]):
     return tmp_image
 
 
-def crop(image: np.ndarray, qpoints: List[QPoint]):
+def crop(image: np.ndarray, corners: np.ndarray):
     """
     Crop document out of background
     """
 
-    for qpoint in qpoints:
+    for qpoint in corners:
         if qpoint is None:
             raise ValueError("Not enough corners to calculate transform")
 
@@ -79,10 +72,10 @@ def crop(image: np.ndarray, qpoints: List[QPoint]):
     # qpoints[3]: bottom left corner
 
     # TODO: Sort corners
-    original_corners = np.array([extract(qpoints[0]),
-                                 extract(qpoints[1]),
-                                 extract(qpoints[2]),
-                                 extract(qpoints[3])], dtype=np.float32)
+    original_corners = np.array([extract(corners[0]),
+                                 extract(corners[1]),
+                                 extract(corners[2]),
+                                 extract(corners[3])], dtype=np.float32)
 
     # TODO: Automatically choose width, height for new_image
     # height = np.linalg.norm(original_corners[3] - original_corners[0])
