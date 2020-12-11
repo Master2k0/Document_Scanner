@@ -138,12 +138,12 @@ class PhotoEditor(QMainWindow):
         corner2_btn.setStatusTip('Choose top right corner')
         corner2_btn.clicked.connect(self.switchToSecondCorner)
         dock_v_box.addWidget(corner2_btn)
-        
+
         corner2_text = QLabel()
         corner2_text.setText(self.corner_points[1])
         corner2_text.setMinimumSize(QSize(130, 20))
         dock_v_box.addWidget(corner2_text)
-        
+
         # Select bottom right corner
         corner3_btn = QPushButton("Bottom Right")
         corner3_btn.setMinimumSize(QSize(130, 40))
@@ -174,16 +174,16 @@ class PhotoEditor(QMainWindow):
                                              Qt.RightDockWidgetArea)
         # Create container QWidget to hold all widgets inside dock widget
         self.tools_contents = QWidget()
-        
+
         # Create tool push buttons
         # Set the main layout for the QWidget, tools_contents,
         # then set the main widget of the dock widget
         self.tools_contents.setLayout(dock_v_box)
         self.dock_tools_view.setWidget(self.tools_contents)
-        
+
         # Set initial location of dock widget
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_tools_view)
-        
+
         # Handles the visibility of the dock widget
         self.toggle_dock_tools_act = self.dock_tools_view.toggleViewAction()
 
@@ -198,26 +198,6 @@ class PhotoEditor(QMainWindow):
         self.image_label.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Ignored)
         self.setCentralWidget(self.image_label)
-
-    def showImage(self):
-        image_matrix = self.image_mat if self.show_original else self.final_image_mat
-
-        image_matrix = draw_circle_around_corners(
-            image_matrix, self.corner_points)
-
-        # scale the image to display
-        self.image = convert_ndarray_to_QPixmap(image_matrix)
-        self.image = self.image.scaled(
-            self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-
-        # get scale ratio
-        original_height: int = image_matrix.shape[0]
-        self.scale_ratio: float = original_height / self.image.height()
-
-        # show the image on screen
-        self.image_label.setPixmap(self.image)
-
-        self.image_label.mousePressEvent = self.selectCorner
 
     def openImage(self):
         """
@@ -259,6 +239,26 @@ class PhotoEditor(QMainWindow):
         else:
             QMessageBox.information(self, "Error",
                                     "Unable to save image.", QMessageBox.Ok)
+
+    def showImage(self):
+        image_matrix = self.image_mat if self.show_original else self.final_image_mat
+
+        image_matrix = draw_circle_around_corners(
+            image_matrix, self.corner_points)
+
+        # scale the image to display
+        self.image = convert_ndarray_to_QPixmap(image_matrix)
+        self.image = self.image.scaled(
+            self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        # get scale ratio
+        original_height: int = image_matrix.shape[0]
+        self.scale_ratio: float = original_height / self.image.height()
+
+        # show the image on screen
+        self.image_label.setPixmap(self.image)
+
+        self.image_label.mousePressEvent = self.selectCorner
 
     def clearImage(self):
         """
