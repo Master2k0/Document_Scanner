@@ -1,11 +1,9 @@
 from PyQt5.QtCore import QPoint
-from typing import List, Tuple
+from typing import List
 from PyQt5.QtGui import QImage, QPixmap
 
 import cv2
 import numpy as np
-
-import matplotlib.pyplot as plt
 
 
 def convert_ndarray_to_QPixmap(image_matrix: np.ndarray) -> QImage:
@@ -29,14 +27,46 @@ def extract(point: QPoint) -> np.ndarray:
     """
     return np.array([point.x(), point.y()])
 
+
 def manhattan(a, b):
     return np.abs(b - a).sum()
 
-def transform(image: np.ndarray, qpoints: List[QPoint]):
+
+def rotate_left_90(image: np.ndarray) -> np.ndarray:
+    return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+
+
+def flip_horizontal(image: np.ndarray) -> np.ndarray:
+    return cv2.flip(image, 1)
+
+
+def flip_vertical(image: np.ndarray) -> np.ndarray:
+    return cv2.flip(image, 0)
+
+
+def draw_circle_around_corners(image: np.ndarray, qpoints: List[QPoint]):
+    radius = 25
+    color = (0, 0, 255)
+    thickness = -4
+
+    tmp_image = image.copy()
+
+    for qpoint in qpoints:
+        if qpoint is None:
+            continue
+        corner_coordinates = tuple(extract(qpoint).tolist())
+        tmp_image = cv2.circle(tmp_image,
+                               corner_coordinates,
+                               radius,
+                               color,
+                               thickness)
+
+    return tmp_image
+
+
+def crop(image: np.ndarray, qpoints: List[QPoint]):
     """
-    Crop document
-    Params:
-    image 
+    Crop document out of background
     """
 
     for qpoint in qpoints:

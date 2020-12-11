@@ -2,7 +2,7 @@
 
 import sys
 from typing import List
-from utils import convert_ndarray_to_QPixmap, transform
+from utils import convert_ndarray_to_QPixmap, draw_circle_around_corners, flip_horizontal, flip_vertical, rotate_left_90, crop
 
 import numpy as np
 import cv2
@@ -10,9 +10,8 @@ import cv2
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel,
                              QAction, QFileDialog, QDesktopWidget, QMessageBox, QSizePolicy, QToolBar,
                              QStatusBar, QDockWidget, QVBoxLayout, QPushButton)
-from PyQt5.QtGui import QCursor, QIcon, QPixmap, QTransform, QPainter
-from PyQt5.QtCore import QPoint, Qt, QSize, QRect
-from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import QPoint, Qt, QSize
 
 
 class PhotoEditor(QMainWindow):
@@ -24,157 +23,140 @@ class PhotoEditor(QMainWindow):
         """
         Initialize the window and display its contents to the screen
         """
-        self.setMinimumSize(720, 500)
+        self.setMinimumSize(580, 640)
         self.setWindowTitle('Document Scanner')
         self.centerMainWindow()
-        self.createToolsDockWidget()
-        self.createMenu()
-        self.createToolBar()
+        self.createToolbar()
+        self.createRightDock()
         self.photoEditorWidgets()
         self.show()
 
-    def createMenu(self):
-        """
-        Create menu for photo editor GUI
-        """
-        # Create actions for file menu
-        self.open_act = QAction(QIcon('icons/file.svg'), "Open", self)
-        self.open_act.setShortcut('Ctrl+O')
-        self.open_act.setStatusTip('Open a new image')
-        self.open_act.triggered.connect(self.openImage)
-
-        self.save_act = QAction(QIcon('icons/save.svg'), "Save", self)
-        self.save_act.setShortcut('Ctrl+S')
-        self.save_act.setStatusTip('Save image')
-        self.save_act.triggered.connect(self.saveImage)
-
-        self.exit_act = QAction(QIcon('icons/close.svg'), 'Exit', self)
-        self.exit_act.setShortcut('Ctrl+Q')
-        self.exit_act.setStatusTip('Quit program')
-        self.exit_act.triggered.connect(self.close)
-
-        # Create actions for edit menu
-        self.rotate90_act = QAction(
-            QIcon('icons/rotate.svg'), "Rotate 90°", self)
-        self.rotate90_act.setStatusTip('Rotate image 90° clockwise')
-        self.rotate90_act.triggered.connect(self.rotateImage90)
-
-        self.flip_hor_act = QAction(
-            QIcon('icons/flip-hor.svg'), "Flip Horizontal", self)
-        self.flip_hor_act.setStatusTip('Flip image across horizontal axis')
-        self.flip_hor_act.triggered.connect(self.flipImageHorizontal)
-
-        self.flip_ver_act = QAction(
-            QIcon('icons/flip-ver.svg'), "Flip Vertical", self)
-        self.flip_ver_act.setStatusTip('Flip image across vertical axis')
-        self.flip_ver_act.triggered.connect(self.flipImageVertical)
-
-        self.clear_act = QAction(
-            QIcon('icons/recycling-bin.svg'), "Clear Image", self)
-        self.clear_act.setShortcut("Ctrl+D")
-        self.clear_act.setStatusTip('Clear the current image')
-        self.clear_act.triggered.connect(self.clearImage)
-        # Create menubar
-        menu_bar = self.menuBar()
-        menu_bar.setNativeMenuBar(False)
-        # Create file menu and add actions
-        file_menu = menu_bar.addMenu('File')
-        file_menu.addAction(self.open_act)
-        file_menu.addAction(self.save_act)
-        file_menu.addSeparator()
-        file_menu.addAction(self.exit_act)
-        # Create edit menu and add actions
-        edit_menu = menu_bar.addMenu('Edit')
-        edit_menu.addAction(self.rotate90_act)
-        edit_menu.addSeparator()
-        edit_menu.addAction(self.flip_hor_act)
-        edit_menu.addAction(self.flip_ver_act)
-        edit_menu.addSeparator()
-        edit_menu.addAction(self.clear_act)
-        # Create view menu and add actions
-        view_menu = menu_bar.addMenu('View')
-        view_menu.addAction(self.toggle_dock_tools_act)
-        # Display info about tools, menu, and view in the status bar
-        self.setStatusBar(QStatusBar(self))
-
-    def createToolBar(self):
+    def createToolbar(self):
         """
         Create toolbar for photo editor GUI
         """
+        # Create toolbar
         tool_bar = QToolBar("Photo Editor Toolbar")
         tool_bar.setIconSize(QSize(24, 24))
         self.addToolBar(tool_bar)
 
         # Add actions to toolbar
-        tool_bar.addAction(self.open_act)
-        tool_bar.addAction(self.save_act)
-        tool_bar.addAction(self.clear_act)
-        tool_bar.addSeparator()
-        tool_bar.addAction(self.rotate90_act)
-        tool_bar.addAction(self.flip_hor_act)
-        tool_bar.addAction(self.flip_ver_act)
-        tool_bar.addSeparator()
-        tool_bar.addAction(self.exit_act)
+        open_act = QAction(QIcon('icons/file.svg'), "Open", self)
+        open_act.setShortcut('Ctrl+O')
+        open_act.setStatusTip('Open a new image')
+        open_act.triggered.connect(self.openImage)
+        tool_bar.addAction(open_act)
 
-    def createToolsDockWidget(self):
+        save_act = QAction(QIcon('icons/save.svg'), "Save", self)
+        save_act.setShortcut('Ctrl+S')
+        save_act.setStatusTip('Save image')
+        save_act.triggered.connect(self.saveImage)
+        tool_bar.addAction(save_act)
+
+        clear_act = QAction(QIcon('icons/trash.svg'), "Close image", self)
+        clear_act.setShortcut("Ctrl+D")
+        clear_act.setStatusTip('Close image')
+        clear_act.triggered.connect(self.clearImage)
+        tool_bar.addAction(clear_act)
+
+        tool_bar.addSeparator()
+
+        rotate_act = QAction(QIcon('icons/rotate.svg'), "Rotate 90°", self)
+        rotate_act.setStatusTip('Rotate image 90° clockwise')
+        rotate_act.triggered.connect(self.rotateImage90)
+        tool_bar.addAction(rotate_act)
+
+        flip_h_act = QAction(QIcon('icons/fliph.svg'), "Flip Horizontal", self)
+        flip_h_act.setStatusTip('Flip image horizontally')
+        flip_h_act.triggered.connect(self.flipImageHorizontal)
+        tool_bar.addAction(flip_h_act)
+
+        flip_r_act = QAction(QIcon('icons/flipv.svg'), "Flip Vertical", self)
+        flip_r_act.setStatusTip('Flip image vertically')
+        flip_r_act.triggered.connect(self.flipImageVertical)
+        tool_bar.addAction(flip_r_act)
+
+        zoom_act = QAction(QIcon('icons/zoom.svg'), 'Zoom to fit', self)
+        zoom_act.setStatusTip('Zoom image to fit the screen')
+        zoom_act.triggered.connect(self.showImage)
+        tool_bar.addAction(zoom_act)  # TODO
+
+        tool_bar.addSeparator()
+
+        restore_act = QAction(QIcon('icons/reset.svg'), 'Reset image', self)
+        restore_act.setStatusTip("Discard all changes to the image")
+        restore_act.triggered.connect(self.restoreImage)
+        tool_bar.addAction(restore_act)  # TODO
+
+        tool_bar.addSeparator()
+
+        auto_pick_act = QAction(QIcon('icons/auto.svg'), 'Auto pick', self)
+        auto_pick_act.setStatusTip('Auto pick corners')
+        auto_pick_act.triggered.connect(lambda: 23)  # TODO
+        tool_bar.addAction(auto_pick_act)
+
+        # Display info about tools, menu, and view in the status bar
+        self.setStatusBar(QStatusBar(self))
+
+    def createRightDock(self):
         """
         Use View -> Edit Image Tools menu and click the dock widget on or off.
         Tools dock can be placed on the left or right of the main window.
         """
+        # Set up vertical layout to contain all the push buttons
+        dock_v_box = QVBoxLayout()
+
+        edit_btn = QPushButton("Edit")
+        edit_btn.setMinimumSize(QSize(130, 40))
+        edit_btn.setStatusTip("Edit image mode")
+        edit_btn.clicked.connect(lambda: 2)  # TODO
+        dock_v_box.addWidget(edit_btn)
+
+        crop_btn = QPushButton("Preview")
+        crop_btn.setMinimumSize(QSize(130, 40))
+        crop_btn.setStatusTip("Document image")
+        crop_btn.clicked.connect(lambda: 2)  # TODO
+        dock_v_box.addWidget(crop_btn)
+
+        dock_v_box.addStretch(1)
+
+        # Select top left corner
+        first_corner_btn = QPushButton("Top Left")
+        first_corner_btn.setMinimumSize(QSize(130, 40))
+        first_corner_btn.setStatusTip('Choose top left corner')
+        first_corner_btn.clicked.connect(self.switchToFirstCorner)
+        dock_v_box.addWidget(first_corner_btn)
+
+        # Select top right corner
+        second_corner_btn = QPushButton("Top Right")
+        second_corner_btn.setMinimumSize(QSize(130, 40))
+        second_corner_btn.setStatusTip('Choose top right corner')
+        second_corner_btn.clicked.connect(self.switchToSecondCorner)
+        dock_v_box.addWidget(second_corner_btn)
+
+        # Select bottom right corner
+        third_corner_btn = QPushButton("Bottom Right")
+        third_corner_btn.setMinimumSize(QSize(130, 40))
+        third_corner_btn.setStatusTip('Choose bottom right corner')
+        third_corner_btn.clicked.connect(self.switchToThirdCorner)
+        dock_v_box.addWidget(third_corner_btn)
+
+        # Select bottom left corner
+        fourth_corner_btn = QPushButton("Bottom Left")
+        fourth_corner_btn.setMinimumSize(QSize(130, 40))
+        fourth_corner_btn.setStatusTip('Choose bottom left corner')
+        fourth_corner_btn.clicked.connect(self.switchToFourthCorner)
+        dock_v_box.addWidget(fourth_corner_btn)
+
+        dock_v_box.addStretch(6)
+
         # Set up QDockWidget
         self.dock_tools_view = QDockWidget()
-        self.dock_tools_view.setWindowTitle("Edit Image Tools")
         self.dock_tools_view.setAllowedAreas(Qt.LeftDockWidgetArea |
                                              Qt.RightDockWidgetArea)
         # Create container QWidget to hold all widgets inside dock widget
         self.tools_contents = QWidget()
         # Create tool push buttons
-
-        # Select top left corner
-        self.first_corner_btn = QPushButton("Top Left")
-        self.first_corner_btn.setMinimumSize(QSize(130, 40))
-        self.first_corner_btn.setStatusTip('Choose top left corner')
-        self.first_corner_btn.clicked.connect(self.switchToFirstCorner)
-
-        # Select top right corner
-        self.second_corner_btn = QPushButton("Top Right")
-        self.second_corner_btn.setMinimumSize(QSize(130, 40))
-        self.second_corner_btn.setStatusTip('Choose top right corner')
-        self.second_corner_btn.clicked.connect(self.switchToSecondCorner)
-        # Select bottom right corner
-        self.third_corner_btn = QPushButton("Bottom Right")
-        self.third_corner_btn.setMinimumSize(QSize(130, 40))
-        self.third_corner_btn.setStatusTip('Choose bottom right corner')
-        self.third_corner_btn.clicked.connect(self.switchToThirdCorner)
-
-        # Select bottom left corner
-        self.fourth_corner_btn = QPushButton("Bottom Left")
-        self.fourth_corner_btn.setMinimumSize(QSize(130, 40))
-        self.fourth_corner_btn.setStatusTip('Choose bottom left corner')
-        self.fourth_corner_btn.clicked.connect(self.switchToFourthCorner)
-
-        # Original image
-        self.original_image_btn = QPushButton("Original")
-        self.original_image_btn.setMinimumSize(QSize(130, 40))
-        self.original_image_btn.setStatusTip("Show original image")
-        self.original_image_btn.clicked.connect(self.show_original)
-
-        # Show transformed image
-        self.transformed_image_btn = QPushButton("Transform")
-        self.transformed_image_btn.setMinimumSize(QSize(130, 40))
-        self.transformed_image_btn.setStatusTip("Show transformed image")
-        self.transformed_image_btn.clicked.connect(self.show_transformed)
-
-        # Set up vertical layout to contain all the push buttons
-        dock_v_box = QVBoxLayout()
-        dock_v_box.addWidget(self.first_corner_btn)
-        dock_v_box.addWidget(self.second_corner_btn)
-        dock_v_box.addWidget(self.third_corner_btn)
-        dock_v_box.addWidget(self.fourth_corner_btn)
-        dock_v_box.addStretch(1)
-        dock_v_box.addWidget(self.original_image_btn)
-        dock_v_box.addWidget(self.transformed_image_btn)
-        dock_v_box.addStretch(6)
 
         # Set the main layout for the QWidget, tools_contents,
         # then set the main widget of the dock widget
@@ -197,15 +179,12 @@ class PhotoEditor(QMainWindow):
             QSizePolicy.Expanding, QSizePolicy.Ignored)
         self.setCentralWidget(self.image_label)
 
-    def show_original(self):
-        self.show_image(self.image_matrix)
+    def showImage(self):
+        image_matrix = self.image_mat if self.show_original else self.final_image_mat
 
-    def show_transformed(self):
-        self.transformed_image = transform(
-            self.image_matrix, self.corner_points)
-        self.show_image(self.transformed_image)
+        image_matrix = draw_circle_around_corners(
+            image_matrix, self.corner_points)
 
-    def show_image(self, image_matrix: np.ndarray):
         # scale the image to display
         self.image = convert_ndarray_to_QPixmap(image_matrix)
         self.image = self.image.scaled(
@@ -230,24 +209,28 @@ class PhotoEditor(QMainWindow):
                                                      PNG Files (*.png);; \
                                                      Bitmap Files (*.bmp);; \
                                                      GIF Files(*.gif)")
-        if image_path:
-            # use self.image_matrix with opencv
-            self.image_matrix: np.ndarray = cv2.imread(image_path)
-            if self.image_matrix is None:
-                QMessageBox.information(self, "Error",
-                                        "Unable to read image to OpenCV.", QMessageBox.Ok)
-            self.corner_points: List[QPoint] = [None] * 4
-            self.corner_idx: int = 0
-            self.show_image(self.image_matrix)
-        else:
+        if not image_path:
             QMessageBox.information(self, "Error",
                                     "Unable to open image.", QMessageBox.Ok)
+            return
+
+        self.image_mat: np.ndarray = cv2.imread(image_path)
+        self.final_image_mat = self.image_mat.copy()
+        self.initCornersPoint()
+
+        if self.image_mat is None:
+            QMessageBox.information(self, "Error",
+                                    "Unable to read image to OpenCV.", QMessageBox.Ok)
+
+        self.showImage()
 
     def saveImage(self):
         """
         Save the image.
         Display error message if image can't be saved.
         """
+        # TODO: Implement this shit
+        raise NotImplemented
 
         image_file, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
                                                     "JPG Files (*.jpeg * .jpg); ; PNG Files (*.png); ; Bitmap Files (*.bmp); ; GIF Files(*.gif)")
@@ -257,39 +240,6 @@ class PhotoEditor(QMainWindow):
             QMessageBox.information(self, "Error",
                                     "Unable to save image.", QMessageBox.Ok)
 
-    def printImage(self):
-        """
-        Print image.
-        """
-        # Create printer object and print output defined by the platform
-        # the program is being run on.
-        # QPrinter.NativeFormat is the default
-        printer = QPrinter()
-        printer.setOutputFormat(QPrinter.NativeFormat)
-        # Create printer dialog to configure printer
-        print_dialog = QPrintDialog(printer)
-        # If the dialog is accepted by the user, begin printing
-        if (print_dialog.exec_() == QPrintDialog.Accepted):
-            # Use QPainter to output a PDF file
-            painter = QPainter()
-            # Begin painting device
-            painter.begin(printer)
-            # Set QRect to hold painter's current viewport, which
-            # is the image_label
-            rect = QRect(painter.viewport())
-            # Get the size of image_label and use it to set the size
-            # of the viewport
-            size = QSize(self.image_label.pixmap().size())
-            size.scale(rect.size(), Qt.KeepAspectRatio)
-
-            painter.setViewport(rect.x(), rect.y(),
-                                size.width(), size.height())
-            painter.setWindow(self.image_label.pixmap().rect())
-            # Scale the image_label to fit the rect source (0, 0)
-            painter.drawPixmap(0, 0, self.image_label.pixmap())
-            # End painting
-            painter.end()
-
     def clearImage(self):
         """
         Clears current image in QLabel widget
@@ -297,54 +247,47 @@ class PhotoEditor(QMainWindow):
         self.image_label.clear()
         self.image = QPixmap()  # reset pixmap so that isNull() = True
 
+    def initCornersPoint(self):
+        self.corner_points: List[QPoint] = [None] * 4
+        self.corner_idx: int = 0
+
+    def restoreImage(self):
+        self.final_image_mat = self.image_mat
+        self.showImage()
+        self.initCornersPoint()
+
     def rotateImage90(self):
         """
         Rotate image 90° clockwise
         """
-        if self.image.isNull() == False:
-            transform90 = QTransform().rotate(90)
-            pixmap = QPixmap(self.image)
-            rotated = pixmap.transformed(
-                transform90, mode=Qt.SmoothTransformation)
-            self.image_label.setPixmap(rotated.scaled(self.image_label.size(),
-                                                      Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            self.image = QPixmap(rotated)
-            self.image_label.repaint()  # repaint the child widget
-        else:
-            # No image to rotate
-            pass
+        if self.final_image_mat is None:
+            return
+
+        self.final_image_mat = rotate_left_90(self.final_image_mat)
+
+        self.showImage()
+
+        self.initCornersPoint()
 
     def flipImageHorizontal(self):
         """
         Mirror the image across the horizontal axis
         """
-        if self.image.isNull() == False:
-            flip_h = QTransform().scale(-1, 1)
-            pixmap = QPixmap(self.image)
-            flipped = pixmap.transformed(flip_h)
-            self.image_label.setPixmap(flipped.scaled(self.image_label.size(),
-                                                      Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            self.image = QPixmap(flipped)
-            self.image_label.repaint()
-        else:
-            # No image to flip
-            pass
+        self.final_image_mat = flip_horizontal(self.final_image_mat)
+
+        self.showImage()
+
+        self.initCornersPoint()
 
     def flipImageVertical(self):
         """
         Mirror the image across the vertical axis
         """
-        if self.image.isNull() == False:
-            flip_v = QTransform().scale(1, -1)
-            pixmap = QPixmap(self.image)
-            flipped = pixmap.transformed(flip_v)
-            self.image_label.setPixmap(flipped.scaled(self.image_label.size(),
-                                                      Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            self.image = QPixmap(flipped)
-            self.image_label.repaint()
-        else:
-            # No image to flip
-            pass
+        self.final_image_mat = flip_vertical(self.final_image_mat)
+
+        self.showImage()
+
+        self.initCornersPoint()
 
     def switchToFirstCorner(self):
         self.corner_idx = 0
@@ -364,6 +307,7 @@ class PhotoEditor(QMainWindow):
         original_y = int(round(tmp_pos.y() * self.scale_ratio))
         self.corner_points[self.corner_idx] = QPoint(original_x, original_y)
         print(self.corner_points[self.corner_idx])
+        self.showImage()
 
     def centerMainWindow(self):
         """
