@@ -1,4 +1,4 @@
 .python-version
 .vscode/
 __pycache__/
-test.python
+test.py
