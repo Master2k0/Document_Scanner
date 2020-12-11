@@ -1,8 +1,8 @@
 # main.py
 
 import sys
-from typing import List
-from utils import convert_ndarray_to_QPixmap, draw_circle_around_corners, flip_horizontal, flip_vertical, rotate_left_90, crop
+from typing import Callable, List
+from utils import convert_ndarray_to_QPixmap, draw_border, flip_horizontal, flip_vertical, rotate_90_clockwise, crop
 
 import numpy as np
 import cv2
@@ -117,53 +117,23 @@ class PhotoEditor(QMainWindow):
 
         dock_v_box.addStretch(1)
 
-        # Select top left corner
-        corner1_btn = QPushButton("Top Left")
-        corner1_btn.setMinimumSize(QSize(130, 40))
-        corner1_btn.setStatusTip('Choose top left corner')
-        corner1_btn.clicked.connect(self.switchToFirstCorner)
-        dock_v_box.addWidget(corner1_btn)
+        # Add select corner buttons and text to display corner's coordinates
+        corner_names = ["Top Left", "Top Right", "Bottom Right", "Bottom Left"]
+        self.corner_labels = []
 
-        corner1_text = QLabel()
-        corner1_text.setText("")
-        corner1_text.setMinimumSize(QSize(130, 20))
-        dock_v_box.addWidget(corner1_text)
+        for i in range(4):
+            corner_btn = QPushButton(corner_names[i])
+            corner_btn.setMinimumSize(QSize(130, 40))
+            corner_btn.setStatusTip(f'Select {corner_names[i]} corner')
+            corner_btn.clicked.connect(self.switchCornerFactory(i))
+            dock_v_box.addWidget(corner_btn)
 
-        # Select top right corner
-        corner2_btn = QPushButton("Top Right")
-        corner2_btn.setMinimumSize(QSize(130, 40))
-        corner2_btn.setStatusTip('Choose top right corner')
-        corner2_btn.clicked.connect(self.switchToSecondCorner)
-        dock_v_box.addWidget(corner2_btn)
-
-        corner2_text = QLabel()
-        corner2_text.setText("")
-        corner2_text.setMinimumSize(QSize(130, 20))
-        dock_v_box.addWidget(corner2_text)
-
-        # Select bottom right corner
-        corner3_btn = QPushButton("Bottom Right")
-        corner3_btn.setMinimumSize(QSize(130, 40))
-        corner3_btn.setStatusTip('Choose bottom right corner')
-        corner3_btn.clicked.connect(self.switchToThirdCorner)
-        dock_v_box.addWidget(corner3_btn)
-
-        corner3_text = QLabel()
-        corner3_text.setText("")
-        corner3_text.setMinimumSize(QSize(130, 20))
-        dock_v_box.addWidget(corner3_text)
-
-        # Select bottom left corner
-        corner4_btn = QPushButton("Bottom Left")
-        corner4_btn.setMinimumSize(QSize(130, 40))
-        corner4_btn.setStatusTip('Choose bottom left corner')
-        corner4_btn.clicked.connect(self.switchToFourthCorner)
-        dock_v_box.addWidget(corner4_btn)
-
-        corner4_text = QLabel()
-        corner4_text.setText("")
-        corner4_text.setMinimumSize(QSize(130, 20))
-        dock_v_box.addWidget(corner4_text)
+            corner_label = QLabel()
+            corner_label.setText("")
+            corner_label.setMinimumSize(QSize(130, 20))
+            corner_label.setAlignment(Qt.AlignCenter)
+            self.corner_labels.append(corner_label)
+            dock_v_box.addWidget(corner_label)
 
         # Set up QDockWidget
         self.dock_tools_view = QDockWidget()
@@ -224,7 +194,6 @@ class PhotoEditor(QMainWindow):
         self.is_edit_mode: bool = False
         self.switchMode()
 
-
     def saveImage(self):
         """
         Save the image.
@@ -245,33 +214,49 @@ class PhotoEditor(QMainWindow):
         self.is_edit_mode = not self.is_edit_mode
 
         if self.is_edit_mode:
-            self.switch_mode_btn.setText("Edit Mode")
-            self.switch_mode_btn.setStatusTip("Edit image mode")
-        else:
+            # Change button title
             self.switch_mode_btn.setText("Preview Mode")
             self.switch_mode_btn.setStatusTip("Preview result mode")
+
+            # Preprocess image
+            self.image_label.mousePressEvent = self.selectCorner
+        else:
+            # Change button title
+            self.switch_mode_btn.setText("Edit Mode")
+            self.switch_mode_btn.setStatusTip("Edit image mode")
+
+            # Preprocess image
+            self.final_mat = crop(self.image_mat, self.corners)
+            self.image_label.mousePressEvent = None
 
         self.showImage()
 
     def showImage(self):
-        image_matrix = self.image_mat if self.show_original else self.final_mat
+        display_img_mat = self.final_mat
 
-        image_matrix = draw_circle_around_corners(
-            image_matrix, self.corner_points)
+        if self.is_edit_mode:
+            display_img_mat = draw_border(self.image_mat, self.corners)
+
+        if display_img_mat is None:
+            return
+
+        # Convert image_matrix to QPixmap
+        self.image = convert_ndarray_to_QPixmap(display_img_mat)
 
         # scale the image to display
-        self.image = convert_ndarray_to_QPixmap(image_matrix)
         self.image = self.image.scaled(
             self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         # get scale ratio
-        original_height: int = image_matrix.shape[0]
+        original_height: int = display_img_mat.shape[0]
         self.scale_ratio: float = original_height / self.image.height()
 
         # show the image on screen
         self.image_label.setPixmap(self.image)
 
-        self.image_label.mousePressEvent = self.selectCorner
+        # Update corners
+        for i in range(4):
+            self.corner_labels[i].setText(str(self.corners[i]))
 
     def clearImage(self):
         """
@@ -297,14 +282,13 @@ class PhotoEditor(QMainWindow):
         """
         Rotate image 90° clockwise
         """
-        if self.final_mat is None:
-            return
-
-        self.final_mat = rotate_left_90(self.final_mat)
+        if self.is_edit_mode:
+            self.image_mat, self.corners = rotate_90_clockwise(
+                self.image_mat, self.corners)
+        else:
+            self.final_mat = rotate_90_clockwise(self.image_mat)
 
         self.showImage()
-
-        self.initCornersPoint()
 
     def flipImageHorizontal(self):
         """
@@ -326,24 +310,26 @@ class PhotoEditor(QMainWindow):
 
         self.initCornersPoint()
 
-    def switchToFirstCorner(self):
-        self.corner_idx = 0
-
-    def switchToSecondCorner(self):
-        self.corner_idx = 1
-
-    def switchToThirdCorner(self):
-        self.corner_idx = 2
-
-    def switchToFourthCorner(self):
-        self.corner_idx = 3
+    def switchCornerFactory(self, value) -> Callable[[], None]:
+        def switchCorner():
+            self.corner_idx = value
+        return switchCorner
 
     def selectCorner(self, event):
         tmp_pos: QPoint = event.pos()
+
+        current_idx = self.corner_idx
+
         original_x = int(round(tmp_pos.x() * self.scale_ratio))
         original_y = int(round(tmp_pos.y() * self.scale_ratio))
-        self.corners[self.corner_idx] = QPoint(original_x, original_y)
-        print(self.corners[self.corner_idx])
+
+        # Set corner coordinates
+        self.corners[current_idx] = (original_x, original_y)
+
+        # Set text for current corner
+        self.corner_labels[current_idx].setText(str(self.corners[current_idx]))
+
+        # Update image
         self.showImage()
 
     def centerMainWindow(self):

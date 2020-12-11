@@ -25,8 +25,20 @@ def manhattan(a, b):
     return np.abs(b - a).sum()
 
 
-def rotate_left_90(image: np.ndarray) -> np.ndarray:
-    return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+def rotate_corners_90_clockwise(corners: np.ndarray, height: int) -> None:
+    rotate_matrix = np.array([[0, -1, height],
+                              [1,  0, 0]])
+
+    # Add third coordinate in order to translate corners after rotation
+    tmp_corners = np.hstack([corners, np.ones((4, 1))]).T
+
+    return (rotate_matrix @ tmp_corners).T
+
+
+def rotate_90_clockwise(image: np.ndarray, corners: np.ndarray) -> List[np.ndarray]:
+    height, width = image.shape[:2]
+    # rotate_corners_90_clockwise(corners, image.shape[0])
+    return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE), rotate_corners_90_clockwise(corners, height)
 
 
 def flip_horizontal(image: np.ndarray) -> np.ndarray:
@@ -37,22 +49,13 @@ def flip_vertical(image: np.ndarray) -> np.ndarray:
     return cv2.flip(image, 0)
 
 
-def draw_circle_around_corners(image: np.ndarray, qpoints: List[QPoint]):
-    radius = 25
-    color = (0, 0, 255)
-    thickness = -4
-
+def draw_border(image: np.ndarray, corners: np.ndarray):
+    thickness = 20
+    color = (53, 57, 229)
+    isClosed = True
     tmp_image = image.copy()
 
-    for qpoint in qpoints:
-        if qpoint is None:
-            continue
-        corner_coordinates = tuple(extract(qpoint).tolist())
-        tmp_image = cv2.circle(tmp_image,
-                               corner_coordinates,
-                               radius,
-                               color,
-                               thickness)
+    cv2.polylines(tmp_image, np.int32([corners]), isClosed, color, thickness)
 
     return tmp_image
 
@@ -61,54 +64,37 @@ def crop(image: np.ndarray, corners: np.ndarray):
     """
     Crop document out of background
     """
-
-    for qpoint in corners:
-        if qpoint is None:
-            raise ValueError("Not enough corners to calculate transform")
-
     # qpoints[0]: top left corner
     # qpoints[1]: top right corner
     # qpoints[2]: bottom right corner
     # qpoints[3]: bottom left corner
 
     # TODO: Sort corners
-    original_corners = np.array([extract(corners[0]),
-                                 extract(corners[1]),
-                                 extract(corners[2]),
-                                 extract(corners[3])], dtype=np.float32)
 
-    # TODO: Automatically choose width, height for new_image
-    # height = np.linalg.norm(original_corners[3] - original_corners[0])
-    # width = np.linalg.norm(original_corners[1] - original_corners[0])
-    height = manhattan(original_corners[3], original_corners[0])
-    width = manhattan(original_corners[1], original_corners[0])
+    # height = np.linalg.norm(corners[3] - corners[0])
+    # width = np.linalg.norm(corners[1] - corners[0])
+    height = manhattan(corners[3], corners[0])
+    width = manhattan(corners[1], corners[0])
 
     new_corners = np.array([[0, 0],
                             [width, 0],
                             [width, height],
                             [0, height]], dtype=np.float32)
 
-    transform_matrix = cv2.getPerspectiveTransform(
-        original_corners, new_corners)
+    transform_mat = cv2.getPerspectiveTransform(
+        corners.astype(np.float32), new_corners)
+    new_image = cv2.warpPerspective(image, transform_mat, (width, height))
 
-    new_image = cv2.warpPerspective(image, transform_matrix, (width, height))
     # TODO: increase contrast of new_image
     return new_image
 
 
-def auto_transform(image: np.ndarray):
-    raise NotImplemented
-
-
 if __name__ == "__main__":
-    img = cv2.imread('demo_papers/paper2.jpg')
+    import matplotlib.pyplot as plt
 
-    # qpoints = [QPoint(73, 2257),
-    #            QPoint(1263, 1901),
-    #            QPoint(2046, 3287),
-    #            QPoint(573, 4013)]
+    img = cv2.cvtColor(cv2.imread('demo_papers/paper2.jpg'), cv2.COLOR_BGR2RGB)
+    plt.imshow(img)
+    img = rotate_90_clockwise(img, None)[0]
 
-    # new_img = transform(img, qpoints)
-    # new_img_rgb = cv2.cvtColor(new_img, cv2.COLOR_BGR2RGB)
-    # plt.imshow(new_img_rgb)
-    # plt.show()
+    plt.imshow(img)
+    plt.show()
