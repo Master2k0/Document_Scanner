@@ -23,7 +23,7 @@ class PhotoEditor(QMainWindow):
         """
         Initialize the window and display its contents to the screen
         """
-        self.setMinimumSize(580, 640)
+        self.setMinimumSize(600, 640)
         self.setWindowTitle('Document Scanner')
         self.centerMainWindow()
         self.createToolbar()
@@ -106,13 +106,13 @@ class PhotoEditor(QMainWindow):
         # Set up vertical layout to contain all the push buttons
         dock_v_box = QVBoxLayout()
 
-        edit_btn = QPushButton("Edit")
+        edit_btn = QPushButton("Edit Mode")
         edit_btn.setMinimumSize(QSize(130, 40))
         edit_btn.setStatusTip("Edit image mode")
         edit_btn.clicked.connect(lambda: 2)  # TODO
         dock_v_box.addWidget(edit_btn)
 
-        crop_btn = QPushButton("Preview")
+        crop_btn = QPushButton("Preview Mode")
         crop_btn.setMinimumSize(QSize(130, 40))
         crop_btn.setStatusTip("Document image")
         crop_btn.clicked.connect(lambda: 2)  # TODO
@@ -121,26 +121,26 @@ class PhotoEditor(QMainWindow):
         dock_v_box.addStretch(1)
 
         # Select top left corner
-        corner1_btn = QPushButton("Corner 1")
+        corner1_btn = QPushButton("Top Left")
         corner1_btn.setMinimumSize(QSize(130, 40))
         corner1_btn.setStatusTip('Choose top left corner')
         corner1_btn.clicked.connect(self.switchToFirstCorner)
         dock_v_box.addWidget(corner1_btn)
 
         corner1_text = QLabel()
-        corner1_text.setText(self.corner_points[0])
+        corner1_text.setText("")
         corner1_text.setMinimumSize(QSize(130, 20))
         dock_v_box.addWidget(corner1_text)
 
         # Select top right corner
-        corner2_btn = QPushButton("Corner 2")
+        corner2_btn = QPushButton("Top Right")
         corner2_btn.setMinimumSize(QSize(130, 40))
         corner2_btn.setStatusTip('Choose top right corner')
         corner2_btn.clicked.connect(self.switchToSecondCorner)
         dock_v_box.addWidget(corner2_btn)
 
         corner2_text = QLabel()
-        corner2_text.setText(self.corner_points[1])
+        corner2_text.setText("")
         corner2_text.setMinimumSize(QSize(130, 20))
         dock_v_box.addWidget(corner2_text)
 
@@ -152,7 +152,7 @@ class PhotoEditor(QMainWindow):
         dock_v_box.addWidget(corner3_btn)
 
         corner3_text = QLabel()
-        corner3_text.setText(self.corner_points[2])
+        corner3_text.setText("")
         corner3_text.setMinimumSize(QSize(130, 20))
         dock_v_box.addWidget(corner3_text)
 
@@ -164,7 +164,7 @@ class PhotoEditor(QMainWindow):
         dock_v_box.addWidget(corner4_btn)
 
         corner4_text = QLabel()
-        corner4_text.setText(self.corner_points[3])
+        corner4_text.setText("")
         corner4_text.setMinimumSize(QSize(130, 20))
         dock_v_box.addWidget(corner4_text)
 
@@ -185,7 +185,7 @@ class PhotoEditor(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_tools_view)
 
         # Handles the visibility of the dock widget
-        self.toggle_dock_tools_act = self.dock_tools_view.toggleViewAction()
+        # self.toggle_dock_tools_act = self.dock_tools_view.toggleViewAction()
 
     def photoEditorWidgets(self):
         """
@@ -208,19 +208,18 @@ class PhotoEditor(QMainWindow):
                                                     "JPG Files (*.jpeg *jpg);; \
                                                      PNG Files (*.png);; \
                                                      Bitmap Files (*.bmp);; \
-                                                     GIF Files(*.gif)")
+                                                     GIF Files(*.gif) \
+                                                     All Files (*.*)")
         if not image_path:
-            QMessageBox.information(self, "Error",
-                                    "Unable to open image.", QMessageBox.Ok)
             return
 
         self.image_mat: np.ndarray = cv2.imread(image_path)
-        self.final_image_mat = self.image_mat.copy()
+        self.final_mat: np.ndarray = self.image_mat.copy()
         self.initCornersPoint()
 
         if self.image_mat is None:
             QMessageBox.information(self, "Error",
-                                    "Unable to read image to OpenCV.", QMessageBox.Ok)
+                                    "Unable to open image", QMessageBox.Ok)
 
         self.showImage()
 
@@ -241,7 +240,8 @@ class PhotoEditor(QMainWindow):
                                     "Unable to save image.", QMessageBox.Ok)
 
     def showImage(self):
-        image_matrix = self.image_mat if self.show_original else self.final_image_mat
+        return
+        image_matrix = self.image_mat if self.show_original else self.final_mat
 
         image_matrix = draw_circle_around_corners(
             image_matrix, self.corner_points)
@@ -272,7 +272,7 @@ class PhotoEditor(QMainWindow):
         self.corner_idx: int = 0
 
     def restoreImage(self):
-        self.final_image_mat = self.image_mat
+        self.final_mat = self.image_mat
         self.showImage()
         self.initCornersPoint()
 
@@ -280,10 +280,10 @@ class PhotoEditor(QMainWindow):
         """
         Rotate image 90° clockwise
         """
-        if self.final_image_mat is None:
+        if self.final_mat is None:
             return
 
-        self.final_image_mat = rotate_left_90(self.final_image_mat)
+        self.final_mat = rotate_left_90(self.final_mat)
 
         self.showImage()
 
@@ -293,7 +293,7 @@ class PhotoEditor(QMainWindow):
         """
         Mirror the image across the horizontal axis
         """
-        self.final_image_mat = flip_horizontal(self.final_image_mat)
+        self.final_mat = flip_horizontal(self.final_mat)
 
         self.showImage()
 
@@ -303,7 +303,7 @@ class PhotoEditor(QMainWindow):
         """
         Mirror the image across the vertical axis
         """
-        self.final_image_mat = flip_vertical(self.final_image_mat)
+        self.final_mat = flip_vertical(self.final_mat)
 
         self.showImage()
 
