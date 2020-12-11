@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel,
                              QAction, QFileDialog, QDesktopWidget, QMessageBox, QSizePolicy, QToolBar,
                              QStatusBar, QDockWidget, QVBoxLayout, QPushButton)
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import QPoint, Qt, QSize
+from PyQt5.QtCore import QPoint, Qt, QSize, qsrand
 
 
 class PhotoEditor(QMainWindow):
@@ -121,34 +121,52 @@ class PhotoEditor(QMainWindow):
         dock_v_box.addStretch(1)
 
         # Select top left corner
-        first_corner_btn = QPushButton("Top Left")
-        first_corner_btn.setMinimumSize(QSize(130, 40))
-        first_corner_btn.setStatusTip('Choose top left corner')
-        first_corner_btn.clicked.connect(self.switchToFirstCorner)
-        dock_v_box.addWidget(first_corner_btn)
+        corner1_btn = QPushButton("Corner 1")
+        corner1_btn.setMinimumSize(QSize(130, 40))
+        corner1_btn.setStatusTip('Choose top left corner')
+        corner1_btn.clicked.connect(self.switchToFirstCorner)
+        dock_v_box.addWidget(corner1_btn)
+
+        corner1_text = QLabel()
+        corner1_text.setText(self.corner_points[0])
+        corner1_text.setMinimumSize(QSize(130, 20))
+        dock_v_box.addWidget(corner1_text)
 
         # Select top right corner
-        second_corner_btn = QPushButton("Top Right")
-        second_corner_btn.setMinimumSize(QSize(130, 40))
-        second_corner_btn.setStatusTip('Choose top right corner')
-        second_corner_btn.clicked.connect(self.switchToSecondCorner)
-        dock_v_box.addWidget(second_corner_btn)
-
+        corner2_btn = QPushButton("Corner 2")
+        corner2_btn.setMinimumSize(QSize(130, 40))
+        corner2_btn.setStatusTip('Choose top right corner')
+        corner2_btn.clicked.connect(self.switchToSecondCorner)
+        dock_v_box.addWidget(corner2_btn)
+        
+        corner2_text = QLabel()
+        corner2_text.setText(self.corner_points[1])
+        corner2_text.setMinimumSize(QSize(130, 20))
+        dock_v_box.addWidget(corner2_text)
+        
         # Select bottom right corner
-        third_corner_btn = QPushButton("Bottom Right")
-        third_corner_btn.setMinimumSize(QSize(130, 40))
-        third_corner_btn.setStatusTip('Choose bottom right corner')
-        third_corner_btn.clicked.connect(self.switchToThirdCorner)
-        dock_v_box.addWidget(third_corner_btn)
+        corner3_btn = QPushButton("Bottom Right")
+        corner3_btn.setMinimumSize(QSize(130, 40))
+        corner3_btn.setStatusTip('Choose bottom right corner')
+        corner3_btn.clicked.connect(self.switchToThirdCorner)
+        dock_v_box.addWidget(corner3_btn)
+
+        corner3_text = QLabel()
+        corner3_text.setText(self.corner_points[2])
+        corner3_text.setMinimumSize(QSize(130, 20))
+        dock_v_box.addWidget(corner3_text)
 
         # Select bottom left corner
-        fourth_corner_btn = QPushButton("Bottom Left")
-        fourth_corner_btn.setMinimumSize(QSize(130, 40))
-        fourth_corner_btn.setStatusTip('Choose bottom left corner')
-        fourth_corner_btn.clicked.connect(self.switchToFourthCorner)
-        dock_v_box.addWidget(fourth_corner_btn)
+        corner4_btn = QPushButton("Bottom Left")
+        corner4_btn.setMinimumSize(QSize(130, 40))
+        corner4_btn.setStatusTip('Choose bottom left corner')
+        corner4_btn.clicked.connect(self.switchToFourthCorner)
+        dock_v_box.addWidget(corner4_btn)
 
-        dock_v_box.addStretch(6)
+        corner4_text = QLabel()
+        corner4_text.setText(self.corner_points[3])
+        corner4_text.setMinimumSize(QSize(130, 20))
+        dock_v_box.addWidget(corner4_text)
 
         # Set up QDockWidget
         self.dock_tools_view = QDockWidget()
@@ -156,14 +174,16 @@ class PhotoEditor(QMainWindow):
                                              Qt.RightDockWidgetArea)
         # Create container QWidget to hold all widgets inside dock widget
         self.tools_contents = QWidget()
+        
         # Create tool push buttons
-
         # Set the main layout for the QWidget, tools_contents,
         # then set the main widget of the dock widget
         self.tools_contents.setLayout(dock_v_box)
         self.dock_tools_view.setWidget(self.tools_contents)
+        
         # Set initial location of dock widget
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_tools_view)
+        
         # Handles the visibility of the dock widget
         self.toggle_dock_tools_act = self.dock_tools_view.toggleViewAction()
 
