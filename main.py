@@ -269,6 +269,10 @@ class PhotoEditor(QMainWindow):
         """
         self.image_label.clear()
         self.image = QPixmap()  # reset pixmap so that isNull() = True
+        self.image_mat = None
+        self.final_mat = None
+        self.corners = None
+        self.corner_idx = None
 
     def initCornersPoint(self):
         h, w = self.image_mat.shape[:2]
