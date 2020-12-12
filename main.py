@@ -218,15 +218,15 @@ class PhotoEditor(QMainWindow):
             self.switch_mode_btn.setText("Preview Mode")
             self.switch_mode_btn.setStatusTip("Preview result mode")
 
-            # Preprocess image
+            # Enable features
             self.image_label.mousePressEvent = self.selectCorner
         else:
             # Change button title
             self.switch_mode_btn.setText("Edit Mode")
             self.switch_mode_btn.setStatusTip("Edit image mode")
 
-            # Preprocess image
-            self.final_mat = crop(self.image_mat, self.corners)
+            # Disable features
+
             self.image_label.mousePressEvent = None
 
         self.showImage()
@@ -236,6 +236,9 @@ class PhotoEditor(QMainWindow):
 
         if self.is_edit_mode:
             display_img_mat = draw_border(self.image_mat, self.corners)
+        else:
+            self.final_mat = crop(self.image_mat, self.corners)
+            display_img_mat = self.final_mat
 
         if display_img_mat is None:
             return
@@ -282,11 +285,8 @@ class PhotoEditor(QMainWindow):
         """
         Rotate image 90° clockwise
         """
-        if self.is_edit_mode:
-            self.image_mat, self.corners = rotate_90_clockwise(
-                self.image_mat, self.corners)
-        else:
-            self.final_mat = rotate_90_clockwise(self.image_mat)
+        self.image_mat, self.corners = rotate_90_clockwise(
+            self.image_mat, self.corners)
 
         self.showImage()
 
@@ -297,9 +297,6 @@ class PhotoEditor(QMainWindow):
         self.final_mat = flip_horizontal(self.final_mat)
 
         self.showImage()
-
-        self.initCornersPoint()
-
     def flipImageVertical(self):
         """
         Mirror the image across the vertical axis
@@ -307,8 +304,6 @@ class PhotoEditor(QMainWindow):
         self.final_mat = flip_vertical(self.final_mat)
 
         self.showImage()
-
-        self.initCornersPoint()
 
     def switchCornerFactory(self, value) -> Callable[[], None]:
         def switchCorner():

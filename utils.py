@@ -25,12 +25,20 @@ def manhattan(a, b):
     return np.abs(b - a).sum()
 
 
+def add_z_coordinates(pts: np.ndarray):
+    nrow, ncol = pts.shape[:2]
+
+    assert(ncol == 2)
+
+    return np.hstack([pts, np.ones((nrow, 1))]).astype(pts.dtype)
+
+
 def rotate_corners_90_clockwise(corners: np.ndarray, height: int) -> None:
     rotate_matrix = np.array([[0, -1, height],
-                              [1,  0, 0]])
+                              [1,  0,      0]], dtype=corners.dtype)
 
-    # Add third coordinate in order to translate corners after rotation
-    tmp_corners = np.hstack([corners, np.ones((4, 1))]).T
+    # Add third coordinate in order to apply translate transformation corners after rotation
+    tmp_corners = add_z_coordinates(corners).T
 
     return (rotate_matrix @ tmp_corners).T
 
@@ -42,10 +50,12 @@ def rotate_90_clockwise(image: np.ndarray, corners: np.ndarray) -> List[np.ndarr
 
 
 def flip_horizontal(image: np.ndarray) -> np.ndarray:
+    raise NotImplemented
     return cv2.flip(image, 1)
 
 
 def flip_vertical(image: np.ndarray) -> np.ndarray:
+    raise NotImplemented
     return cv2.flip(image, 0)
 
 
@@ -81,8 +91,7 @@ def crop(image: np.ndarray, corners: np.ndarray):
                             [width, height],
                             [0, height]], dtype=np.float32)
 
-    transform_mat = cv2.getPerspectiveTransform(
-        corners.astype(np.float32), new_corners)
+    transform_mat = cv2.getPerspectiveTransform(corners, new_corners)
     new_image = cv2.warpPerspective(image, transform_mat, (width, height))
 
     # TODO: increase contrast of new_image
@@ -93,8 +102,20 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     img = cv2.cvtColor(cv2.imread('demo_papers/paper2.jpg'), cv2.COLOR_BGR2RGB)
-    plt.imshow(img)
-    img = rotate_90_clockwise(img, None)[0]
+    height, width = img.shape[:2]
+    # img = rotate_90_clockwise(img, None)[0]
 
-    plt.imshow(img)
-    plt.show()
+    # M = cv2.getRotationMatrix2D((width//2, height//2), -90, 1)
+    # N = cv2.getRotationMatrix2D((width//2, height//2), -90, 2)
+
+    # im1 = cv2.warpAffine(img, M, (height, width))
+    # im2 = cv2.warpAffine(img, N, (width*2, height*2))
+
+    # plt.subplot(1, 2, 1)
+    # plt.imshow(im1)
+    # plt.subplot(1, 2, 2)
+    # plt.imshow(im2)
+    # plt.show()
+    pts1 = np.array([[1, 1]])
+    pts2 = rotate_corners_90_clockwise(pts1, 1)
+    print(pts2)
