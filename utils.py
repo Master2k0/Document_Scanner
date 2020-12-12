@@ -33,17 +33,32 @@ def add_z_coordinates(pts: np.ndarray):
     return np.hstack([pts, np.ones((nrow, 1))]).astype(pts.dtype)
 
 
-def rotate_corners_90_clockwise(corners: np.ndarray, height: int) -> None:
-    rotate_matrix = np.array([[0, -1, height],
+def rotate_90_clockwise(image: np.ndarray, corners: np.ndarray) -> List[np.ndarray]:
+    """
+    Return rotated images and corners
+    """
+    height, width = image.shape[:2]
+
+    # create 90 clockwise rotation matrix
+    rotation_mat = np.array([[0, -1, height],
                               [1,  0,      0]], dtype=corners.dtype)
 
-    # Add third coordinate in order to apply translate transformation corners after rotation
+    # Rotate the image
+    rotated_image = cv2.warpAffine(image, rotation_mat, (height, width))
+
+    # Add third coordinates in order to use with rotation_mat
     tmp_corners = add_z_coordinates(corners).T
+    # Rotate corners' coordinates
+    rotated_corner_coordinates = (rotation_mat @ tmp_corners).T
 
-    return (rotate_matrix @ tmp_corners).T
+    # Rearrange corners' order (bottom-left -> top-left -> top-right -> bottom-right)
+    rotated_corners = np.empty_like(rotated_corner_coordinates)
+    for i in range(rotated_corners.shape[0]):
+        rotated_corners[i] = rotated_corner_coordinates[i - 1]
+
+    return rotated_image, rotated_corners
 
 
-def rotate_90_clockwise(image: np.ndarray, corners: np.ndarray) -> List[np.ndarray]:
     height, width = image.shape[:2]
     # rotate_corners_90_clockwise(corners, image.shape[0])
     return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE), rotate_corners_90_clockwise(corners, height)
