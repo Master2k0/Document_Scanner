@@ -2,16 +2,18 @@
 
 import sys
 from typing import Callable, List
-from utils import convert_ndarray_to_QPixmap, draw_border, flip_horizontal, flip_vertical, rotate_90_clockwise, crop
 
-import numpy as np
 import cv2
-
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel,
-                             QAction, QFileDialog, QDesktopWidget, QMessageBox, QSizePolicy, QToolBar,
-                             QStatusBar, QDockWidget, QVBoxLayout, QPushButton)
+import numpy as np
+from PyQt5.QtCore import QPoint, QSize, Qt
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import QPoint, Qt, QSize, qsrand
+from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
+                             QDockWidget, QFileDialog, QLabel, QMainWindow,
+                             QMessageBox, QPushButton, QSizePolicy, QStatusBar,
+                             QToolBar, QVBoxLayout, QWidget)
+
+from utils import (convert_ndarray_to_QPixmap, crop, draw_border,
+                   flip_horizontal, flip_vertical, rotate_90_clockwise)
 
 
 class PhotoEditor(QMainWindow):
