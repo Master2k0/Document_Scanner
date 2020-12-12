@@ -103,10 +103,10 @@ def crop(image: np.ndarray, corners: np.ndarray):
     """
     Crop document out of background
     """
-    # qpoints[0]: top left corner
-    # qpoints[1]: top right corner
-    # qpoints[2]: bottom right corner
-    # qpoints[3]: bottom left corner
+    # corners[0]: top left corner
+    # corners[1]: top right corner
+    # corners[2]: bottom right corner
+    # corners[3]: bottom left corner
 
     # TODO: Sort corners
 
