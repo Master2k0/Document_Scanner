@@ -343,7 +343,8 @@ class PhotoEditor(QMainWindow):
         """
         Mirror the image across the vertical axis
         """
-        self.final_mat = flip_vertical(self.final_mat)
+        self.image_mat, self.corners = flip_vertical(
+            self.image_mat, self.corners)
 
         self.showImage()
 
