@@ -242,7 +242,7 @@ class PhotoEditor(QMainWindow):
                                                     "JPG Files (*.jpeg *jpg);; \
                                                      PNG Files (*.png);; \
                                                      Bitmap Files (*.bmp);; \
-                                                     GIF Files(*.gif) \
+                                                     GIF Files (*.gif);; \
                                                      All Files (*.*)")
         if not image_path:
             # If no file is selected then skip
