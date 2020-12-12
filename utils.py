@@ -41,7 +41,7 @@ def rotate_90_clockwise(image: np.ndarray, corners: np.ndarray) -> List[np.ndarr
 
     # create 90 clockwise rotation matrix
     rotation_mat = np.array([[0, -1, height],
-                              [1,  0,      0]], dtype=corners.dtype)
+                             [1,  0,      0]], dtype=corners.dtype)
 
     # Rotate the image
     rotated_image = cv2.warpAffine(image, rotation_mat, (height, width))
@@ -59,14 +59,28 @@ def rotate_90_clockwise(image: np.ndarray, corners: np.ndarray) -> List[np.ndarr
     return rotated_image, rotated_corners
 
 
+def flip_horizontal(image: np.ndarray, corners: np.ndarray) -> List[np.ndarray]:
     height, width = image.shape[:2]
-    # rotate_corners_90_clockwise(corners, image.shape[0])
-    return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE), rotate_corners_90_clockwise(corners, height)
 
+    # Create flip matrix
+    flip_h_mat = np.array([[-1, 0, width],
+                           [ 0, 1,     0]], dtype=corners.dtype)
 
-def flip_horizontal(image: np.ndarray) -> np.ndarray:
-    raise NotImplemented
-    return cv2.flip(image, 1)
+    # Flip the image
+    flipped_image = cv2.warpAffine(image, flip_h_mat, (width, height))
+
+    # Add third coordinates in order to use with flip_h_mat
+    tmp_corners = add_z_coordinates(corners).T
+    #Flip corners' coordinates
+    flipped_corner_coordinates = (flip_h_mat @ tmp_corners).T
+
+    # Rearrange corners' order (top-right -> top-left -> bottom-left -> bottom-right)
+    flipped_corners = np.array([flipped_corner_coordinates[1],
+                                flipped_corner_coordinates[0],
+                                flipped_corner_coordinates[2],
+                                flipped_corner_coordinates[3]])
+
+    return flipped_image, flipped_corner_coordinates
 
 
 def flip_vertical(image: np.ndarray) -> np.ndarray:
@@ -111,26 +125,3 @@ def crop(image: np.ndarray, corners: np.ndarray):
 
     # TODO: increase contrast of new_image
     return new_image
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    img = cv2.cvtColor(cv2.imread('demo_papers/paper2.jpg'), cv2.COLOR_BGR2RGB)
-    height, width = img.shape[:2]
-    # img = rotate_90_clockwise(img, None)[0]
-
-    # M = cv2.getRotationMatrix2D((width//2, height//2), -90, 1)
-    # N = cv2.getRotationMatrix2D((width//2, height//2), -90, 2)
-
-    # im1 = cv2.warpAffine(img, M, (height, width))
-    # im2 = cv2.warpAffine(img, N, (width*2, height*2))
-
-    # plt.subplot(1, 2, 1)
-    # plt.imshow(im1)
-    # plt.subplot(1, 2, 2)
-    # plt.imshow(im2)
-    # plt.show()
-    pts1 = np.array([[1, 1]])
-    pts2 = rotate_corners_90_clockwise(pts1, 1)
-    print(pts2)
