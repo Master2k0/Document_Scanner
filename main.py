@@ -85,10 +85,10 @@ class PhotoEditor(QMainWindow):
 
         tool_bar.addSeparator()
 
-        restore_act = QAction(QIcon('icons/reset.svg'), 'Reset image', self)
-        restore_act.setStatusTip("Discard all changes to the image")
-        restore_act.triggered.connect(self.restoreImage)
-        tool_bar.addAction(restore_act)  # TODO
+        reset_act = QAction(QIcon('icons/reset.svg'), 'Reset image', self)
+        reset_act.setStatusTip("Discard all changes")
+        reset_act.triggered.connect(self.resetImage)
+        tool_bar.addAction(reset_act)
 
         tool_bar.addSeparator()
 
