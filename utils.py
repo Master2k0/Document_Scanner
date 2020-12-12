@@ -83,9 +83,28 @@ def flip_horizontal(image: np.ndarray, corners: np.ndarray) -> List[np.ndarray]:
     return flipped_image, flipped_corner_coordinates
 
 
-def flip_vertical(image: np.ndarray) -> np.ndarray:
-    raise NotImplemented
-    return cv2.flip(image, 0)
+def flip_vertical(image: np.ndarray, corners: np.ndarray) -> List[np.ndarray]:
+    height, width = image.shape[:2]
+
+    # Create flip matrix
+    flip_v_mat = np.array([[1,  0,       0],
+                           [0, -1,  height]], dtype=corners.dtype)
+
+    # Flip the image
+    flipped_image = cv2.warpAffine(image, flip_v_mat, (width, height))
+
+    # Add third coordinates in order to use with flip_v_mat
+    tmp_corners = add_z_coordinates(corners).T
+    #Flip corners' coordinates
+    flipped_corner_coordinates = (flip_v_mat @ tmp_corners).T
+
+    # Rearrange corners' order (bottom-left -> bottom-right -> top-right -> top-left)
+    flipped_corners = np.array([flipped_corner_coordinates[3],
+                                flipped_corner_coordinates[2],
+                                flipped_corner_coordinates[1],
+                                flipped_corner_coordinates[0]])
+
+    return flipped_image, flipped_corner_coordinates
 
 
 def draw_border(image: np.ndarray, corners: np.ndarray):
