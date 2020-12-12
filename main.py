@@ -266,13 +266,11 @@ class PhotoEditor(QMainWindow):
         Save the image.
         Display error message if image can't be saved.
         """
-        # TODO: Implement this shit
-        raise NotImplemented
-
-        image_file, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
-                                                    "JPG Files (*.jpeg * .jpg); ; PNG Files (*.png); ; Bitmap Files (*.bmp); ; GIF Files(*.gif)")
-        if image_file and self.image.isNull() == False:
-            self.image.save(image_file)
+        filename, extension = QFileDialog.getSaveFileName(self, "Save Image", "",
+                                                          "*.jpg;; \
+                                                           *.png")
+        if filename and self.final_mat is not None:
+            cv2.imwrite(filename + extension[1:], self.final_mat)
         else:
             QMessageBox.information(self, "Error",
                                     "Unable to save image.", QMessageBox.Ok)
