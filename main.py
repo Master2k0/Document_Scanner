@@ -114,7 +114,7 @@ class PhotoEditor(QMainWindow):
         self.switch_mode_btn = QPushButton("Edit Mode")
         self.switch_mode_btn.setMinimumSize(QSize(130, 40))
         self.switch_mode_btn.setStatusTip("Edit image mode")
-        self.switch_mode_btn.clicked.connect(self.switchMode)  # TODO
+        self.switch_mode_btn.clicked.connect(self.switchMode)
         dock_v_box.addWidget(self.switch_mode_btn)
 
         dock_v_box.addStretch(1)
