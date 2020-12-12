@@ -121,7 +121,7 @@ class PhotoEditor(QMainWindow):
 
         # Add select corner buttons and text to display corner's coordinates
         corner_names = ["Top Left", "Top Right", "Bottom Right", "Bottom Left"]
-        self.corner_labels = []
+        self.corner_labels: List[QLabel] = []
 
         for i in range(4):
             corner_btn = QPushButton(corner_names[i])
