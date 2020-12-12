@@ -168,6 +168,71 @@ class PhotoEditor(QMainWindow):
             QSizePolicy.Expanding, QSizePolicy.Ignored)
         self.setCentralWidget(self.image_label)
 
+    def centerMainWindow(self):
+        """
+        Use QDesktopWidget class to access information about your screen
+        and use it to center the application window.
+        """
+        desktop = QDesktopWidget().screenGeometry()
+        screen_width = desktop.width()
+        screen_height = desktop.height()
+        self.move((screen_width - self.width()) // 2,
+                  (screen_height - self.height()) // 2)
+
+    def switchMode(self):
+        self.is_edit_mode = not self.is_edit_mode
+
+        if self.is_edit_mode:
+            # Change button title
+            self.switch_mode_btn.setText("Preview Mode")
+            self.switch_mode_btn.setStatusTip("Preview result mode")
+
+            # Enable features
+            self.image_label.mousePressEvent = self.selectCorner
+        else:
+            # Change button title
+            self.switch_mode_btn.setText("Edit Mode")
+            self.switch_mode_btn.setStatusTip("Edit image mode")
+
+            # Disable features
+
+            self.image_label.mousePressEvent = None
+
+        self.showImage()
+
+    def switchCornerFactory(self, value) -> Callable[[], None]:
+        def switchCorner():
+            self.corner_idx = value
+        return switchCorner
+
+    def selectCorner(self, event):
+        tmp_pos: QPoint = event.pos()
+
+        current_idx = self.corner_idx
+
+        original_x = int(round(tmp_pos.x() * self.scale_ratio))
+        original_y = int(round(tmp_pos.y() * self.scale_ratio))
+
+        # Set corner coordinates
+        self.corners[current_idx] = (original_x, original_y)
+
+        # Set text for current corner
+        self.corner_labels[current_idx].setText(str(self.corners[current_idx]))
+
+        # Update image
+        self.showImage()
+
+    def initCornersPoint(self):
+        h, w = self.image_mat.shape[:2]
+        self.corners: np.ndarray = np.array([[0, 0],
+                                             [w, 0],
+                                             [w, h],
+                                             [0, h]], dtype=np.float32)
+        self.corner_idx: int = 0
+
+        for i in range(self.corners.shape[0]):
+            self.corner_labels[i].setText(str(self.corners[i]))
+
     def openImage(self):
         """
         Open an image file and display its contents in label widget.
@@ -212,27 +277,6 @@ class PhotoEditor(QMainWindow):
             QMessageBox.information(self, "Error",
                                     "Unable to save image.", QMessageBox.Ok)
 
-    def switchMode(self):
-        self.is_edit_mode = not self.is_edit_mode
-
-        if self.is_edit_mode:
-            # Change button title
-            self.switch_mode_btn.setText("Preview Mode")
-            self.switch_mode_btn.setStatusTip("Preview result mode")
-
-            # Enable features
-            self.image_label.mousePressEvent = self.selectCorner
-        else:
-            # Change button title
-            self.switch_mode_btn.setText("Edit Mode")
-            self.switch_mode_btn.setStatusTip("Edit image mode")
-
-            # Disable features
-
-            self.image_label.mousePressEvent = None
-
-        self.showImage()
-
     def showImage(self):
         display_img_mat = self.final_mat
 
@@ -274,18 +318,10 @@ class PhotoEditor(QMainWindow):
         self.corners = None
         self.corner_idx = None
 
-    def initCornersPoint(self):
-        h, w = self.image_mat.shape[:2]
-        self.corners: np.ndarray = np.array([[0, 0],
-                                             [w, 0],
-                                             [w, h],
-                                             [0, h]], dtype=np.float32)
-        self.corner_idx: int = 0
-
-    def restoreImage(self):
+    def resetImage(self):
         self.final_mat = self.image_mat
-        self.showImage()
         self.initCornersPoint()
+        self.showImage()
 
     def rotateImage90(self):
         """
@@ -312,39 +348,6 @@ class PhotoEditor(QMainWindow):
         self.final_mat = flip_vertical(self.final_mat)
 
         self.showImage()
-
-    def switchCornerFactory(self, value) -> Callable[[], None]:
-        def switchCorner():
-            self.corner_idx = value
-        return switchCorner
-
-    def selectCorner(self, event):
-        tmp_pos: QPoint = event.pos()
-
-        current_idx = self.corner_idx
-
-        original_x = int(round(tmp_pos.x() * self.scale_ratio))
-        original_y = int(round(tmp_pos.y() * self.scale_ratio))
-
-        # Set corner coordinates
-        self.corners[current_idx] = (original_x, original_y)
-
-        # Set text for current corner
-        self.corner_labels[current_idx].setText(str(self.corners[current_idx]))
-
-        # Update image
-        self.showImage()
-
-    def centerMainWindow(self):
-        """
-        Use QDesktopWidget class to access information about your screen
-        and use it to center the application window.
-        """
-        desktop = QDesktopWidget().screenGeometry()
-        screen_width = desktop.width()
-        screen_height = desktop.height()
-        self.move((screen_width - self.width()) // 2,
-                  (screen_height - self.height()) // 2)
 
 
 # Run program
