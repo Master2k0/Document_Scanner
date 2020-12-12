@@ -81,7 +81,7 @@ class PhotoEditor(QMainWindow):
         zoom_act = QAction(QIcon('icons/zoom.svg'), 'Zoom to fit', self)
         zoom_act.setStatusTip('Zoom image to fit the screen')
         zoom_act.triggered.connect(self.showImage)
-        tool_bar.addAction(zoom_act)  # TODO
+        tool_bar.addAction(zoom_act)
 
         tool_bar.addSeparator()
 
