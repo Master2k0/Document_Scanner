@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QMessageBox, QPushButton, QSizePolicy, QStatusBar,
                              QToolBar, QVBoxLayout, QWidget)
 
-from utils import (convert_ndarray_to_QPixmap, crop, draw_border,
+from .utils import (convert_ndarray_to_QPixmap, crop, draw_border,
                    flip_horizontal, flip_vertical, rotate_90_clockwise)
 
 
@@ -45,19 +45,19 @@ class PhotoEditor(QMainWindow):
         self.addToolBar(tool_bar)
 
         # Add actions to toolbar
-        open_act = QAction(QIcon('icons/file.svg'), "Open", self)
+        open_act = QAction(QIcon('./icons/file.svg'), "Open", self)
         open_act.setShortcut('Ctrl+O')
         open_act.setStatusTip('Open a new image')
         open_act.triggered.connect(self.openImage)
         tool_bar.addAction(open_act)
 
-        save_act = QAction(QIcon('icons/save.svg'), "Save", self)
+        save_act = QAction(QIcon('./icons/save.svg'), "Save", self)
         save_act.setShortcut('Ctrl+S')
         save_act.setStatusTip('Save image')
         save_act.triggered.connect(self.saveImage)
         tool_bar.addAction(save_act)
 
-        clear_act = QAction(QIcon('icons/trash.svg'), "Close image", self)
+        clear_act = QAction(QIcon('./icons/trash.svg'), "Close image", self)
         clear_act.setShortcut("Ctrl+D")
         clear_act.setStatusTip('Close image')
         clear_act.triggered.connect(self.clearImage)
@@ -65,36 +65,36 @@ class PhotoEditor(QMainWindow):
 
         tool_bar.addSeparator()
 
-        rotate_act = QAction(QIcon('icons/rotate.svg'), "Rotate 90°", self)
+        rotate_act = QAction(QIcon('./icons/rotate.svg'), "Rotate 90°", self)
         rotate_act.setStatusTip('Rotate image 90° clockwise')
         rotate_act.triggered.connect(self.rotateImage90)
         tool_bar.addAction(rotate_act)
 
-        flip_h_act = QAction(QIcon('icons/fliph.svg'), "Flip Horizontal", self)
+        flip_h_act = QAction(QIcon('./icons/fliph.svg'), "Flip Horizontal", self)
         flip_h_act.setStatusTip('Flip image horizontally')
         flip_h_act.triggered.connect(self.flipImageHorizontal)
         tool_bar.addAction(flip_h_act)
 
-        flip_r_act = QAction(QIcon('icons/flipv.svg'), "Flip Vertical", self)
+        flip_r_act = QAction(QIcon('./icons/flipv.svg'), "Flip Vertical", self)
         flip_r_act.setStatusTip('Flip image vertically')
         flip_r_act.triggered.connect(self.flipImageVertical)
         tool_bar.addAction(flip_r_act)
 
-        zoom_act = QAction(QIcon('icons/zoom.svg'), 'Zoom to fit', self)
+        zoom_act = QAction(QIcon('./icons/zoom.svg'), 'Zoom to fit', self)
         zoom_act.setStatusTip('Zoom image to fit the screen')
         zoom_act.triggered.connect(self.showImage)
         tool_bar.addAction(zoom_act)
 
         tool_bar.addSeparator()
 
-        reset_act = QAction(QIcon('icons/reset.svg'), 'Reset image', self)
+        reset_act = QAction(QIcon('./icons/reset.svg'), 'Reset image', self)
         reset_act.setStatusTip("Discard all changes")
         reset_act.triggered.connect(self.resetImage)
         tool_bar.addAction(reset_act)
 
         tool_bar.addSeparator()
 
-        auto_pick_act = QAction(QIcon('icons/auto.svg'), 'Auto pick', self)
+        auto_pick_act = QAction(QIcon('./icons/auto.svg'), 'Auto pick', self)
         auto_pick_act.setStatusTip('Auto pick corners')
         auto_pick_act.triggered.connect(lambda: 23)  # TODO
         tool_bar.addAction(auto_pick_act)
