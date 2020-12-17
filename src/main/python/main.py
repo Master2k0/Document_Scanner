@@ -9,13 +9,30 @@ import cv2
 import numpy as np
 from PyQt5.QtCore import QPoint, QSize, Qt
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
-                             QDockWidget, QFileDialog, QLabel, QMainWindow,
-                             QMessageBox, QPushButton, QSizePolicy, QStatusBar,
-                             QToolBar, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (
+    QAction,
+    QDesktopWidget,
+    QDockWidget,
+    QFileDialog,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QSizePolicy,
+    QStatusBar,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
+)
 
-from .utils import (convert_ndarray_to_QPixmap, crop, draw_border,
-                   flip_horizontal, flip_vertical, rotate_90_clockwise)
+from .utils import (
+    convert_ndarray_to_QPixmap,
+    crop,
+    draw_border,
+    flip_horizontal,
+    flip_vertical,
+    rotate_90_clockwise,
+)
 
 
 class PhotoEditor(QMainWindow):
@@ -28,7 +45,7 @@ class PhotoEditor(QMainWindow):
         Initialize the window and display its contents to the screen
         """
         self.setMinimumSize(600, 640)
-        self.setWindowTitle('Document Scanner')
+        self.setWindowTitle("Document Scanner")
         self.centerMainWindow()
         self.createToolbar()
         self.createRightDock()
@@ -45,57 +62,57 @@ class PhotoEditor(QMainWindow):
         self.addToolBar(tool_bar)
 
         # Add actions to toolbar
-        open_act = QAction(QIcon('./icons/file.svg'), "Open", self)
-        open_act.setShortcut('Ctrl+O')
-        open_act.setStatusTip('Open a new image')
+        open_act = QAction(QIcon("./icons/file.svg"), "Open", self)
+        open_act.setShortcut("Ctrl+O")
+        open_act.setStatusTip("Open a new image")
         open_act.triggered.connect(self.openImage)
         tool_bar.addAction(open_act)
 
-        save_act = QAction(QIcon('./icons/save.svg'), "Save", self)
-        save_act.setShortcut('Ctrl+S')
-        save_act.setStatusTip('Save image')
+        save_act = QAction(QIcon("./icons/save.svg"), "Save", self)
+        save_act.setShortcut("Ctrl+S")
+        save_act.setStatusTip("Save image")
         save_act.triggered.connect(self.saveImage)
         tool_bar.addAction(save_act)
 
-        clear_act = QAction(QIcon('./icons/trash.svg'), "Close image", self)
+        clear_act = QAction(QIcon("./icons/trash.svg"), "Close image", self)
         clear_act.setShortcut("Ctrl+D")
-        clear_act.setStatusTip('Close image')
+        clear_act.setStatusTip("Close image")
         clear_act.triggered.connect(self.clearImage)
         tool_bar.addAction(clear_act)
 
         tool_bar.addSeparator()
 
-        rotate_act = QAction(QIcon('./icons/rotate.svg'), "Rotate 90°", self)
-        rotate_act.setStatusTip('Rotate image 90° clockwise')
+        rotate_act = QAction(QIcon("./icons/rotate.svg"), "Rotate 90°", self)
+        rotate_act.setStatusTip("Rotate image 90° clockwise")
         rotate_act.triggered.connect(self.rotateImage90)
         tool_bar.addAction(rotate_act)
 
-        flip_h_act = QAction(QIcon('./icons/fliph.svg'), "Flip Horizontal", self)
-        flip_h_act.setStatusTip('Flip image horizontally')
+        flip_h_act = QAction(QIcon("./icons/fliph.svg"), "Flip Horizontal", self)
+        flip_h_act.setStatusTip("Flip image horizontally")
         flip_h_act.triggered.connect(self.flipImageHorizontal)
         tool_bar.addAction(flip_h_act)
 
-        flip_r_act = QAction(QIcon('./icons/flipv.svg'), "Flip Vertical", self)
-        flip_r_act.setStatusTip('Flip image vertically')
+        flip_r_act = QAction(QIcon("./icons/flipv.svg"), "Flip Vertical", self)
+        flip_r_act.setStatusTip("Flip image vertically")
         flip_r_act.triggered.connect(self.flipImageVertical)
         tool_bar.addAction(flip_r_act)
 
-        zoom_act = QAction(QIcon('./icons/zoom.svg'), 'Zoom to fit', self)
-        zoom_act.setStatusTip('Zoom image to fit the screen')
+        zoom_act = QAction(QIcon("./icons/zoom.svg"), "Zoom to fit", self)
+        zoom_act.setStatusTip("Zoom image to fit the screen")
         zoom_act.triggered.connect(self.showImage)
         tool_bar.addAction(zoom_act)
 
         tool_bar.addSeparator()
 
-        reset_act = QAction(QIcon('./icons/reset.svg'), 'Reset image', self)
+        reset_act = QAction(QIcon("./icons/reset.svg"), "Reset image", self)
         reset_act.setStatusTip("Discard all changes")
         reset_act.triggered.connect(self.resetImage)
         tool_bar.addAction(reset_act)
 
         tool_bar.addSeparator()
 
-        auto_pick_act = QAction(QIcon('./icons/auto.svg'), 'Auto pick', self)
-        auto_pick_act.setStatusTip('Auto pick corners')
+        auto_pick_act = QAction(QIcon("./icons/auto.svg"), "Auto pick", self)
+        auto_pick_act.setStatusTip("Auto pick corners")
         auto_pick_act.triggered.connect(lambda: 23)  # TODO
         tool_bar.addAction(auto_pick_act)
 
@@ -128,7 +145,7 @@ class PhotoEditor(QMainWindow):
         for i in range(4):
             corner_btn = QPushButton(corner_names[i])
             corner_btn.setMinimumSize(QSize(130, 40))
-            corner_btn.setStatusTip(f'Select {corner_names[i]} corner')
+            corner_btn.setStatusTip(f"Select {corner_names[i]} corner")
             corner_btn.clicked.connect(self.switchCornerFactory(i))
             dock_v_box.addWidget(corner_btn)
 
@@ -141,8 +158,9 @@ class PhotoEditor(QMainWindow):
 
         # Set up QDockWidget
         self.dock_tools_view = QDockWidget()
-        self.dock_tools_view.setAllowedAreas(Qt.LeftDockWidgetArea |
-                                             Qt.RightDockWidgetArea)
+        self.dock_tools_view.setAllowedAreas(
+            Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea
+        )
         # Create container QWidget to hold all widgets inside dock widget
         self.tools_contents = QWidget()
 
@@ -166,8 +184,7 @@ class PhotoEditor(QMainWindow):
 
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignBaseline)
-        self.image_label.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Ignored)
+        self.image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored)
         self.setCentralWidget(self.image_label)
 
     def centerMainWindow(self):
@@ -178,8 +195,9 @@ class PhotoEditor(QMainWindow):
         desktop = QDesktopWidget().screenGeometry()
         screen_width = desktop.width()
         screen_height = desktop.height()
-        self.move((screen_width - self.width()) // 2,
-                  (screen_height - self.height()) // 2)
+        self.move(
+            (screen_width - self.width()) // 2, (screen_height - self.height()) // 2
+        )
 
     def switchMode(self):
         self.is_edit_mode = not self.is_edit_mode
@@ -205,6 +223,7 @@ class PhotoEditor(QMainWindow):
     def switchCornerFactory(self, value) -> Callable[[], None]:
         def switchCorner():
             self.corner_idx = value
+
         return switchCorner
 
     def selectCorner(self, event):
@@ -226,10 +245,9 @@ class PhotoEditor(QMainWindow):
 
     def initCornersPoint(self):
         h, w = self.image_mat.shape[:2]
-        self.corners: np.ndarray = np.array([[0, 0],
-                                             [w, 0],
-                                             [w, h],
-                                             [0, h]], dtype=np.float32)
+        self.corners: np.ndarray = np.array(
+            [[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32
+        )
         self.corner_idx: int = 0
 
         for i in range(self.corners.shape[0]):
@@ -240,12 +258,16 @@ class PhotoEditor(QMainWindow):
         Open an image file and display its contents in label widget.
         Display error message if image can't be opened.
         """
-        image_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "",
-                                                    "JPG Files (*.jpeg *jpg);; \
+        image_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open Image",
+            "",
+            "JPG Files (*.jpeg *jpg);; \
                                                      PNG Files (*.png);; \
                                                      Bitmap Files (*.bmp);; \
                                                      GIF Files (*.gif);; \
-                                                     All Files (*.*)")
+                                                     All Files (*.*)",
+        )
         if not image_path:
             # If no file is selected then skip
             return
@@ -268,14 +290,19 @@ class PhotoEditor(QMainWindow):
         Save the image.
         Display error message if image can't be saved.
         """
-        filename, extension = QFileDialog.getSaveFileName(self, "Save Image", "",
-                                                          "*.jpg;; \
-                                                           *.png")
+        filename, extension = QFileDialog.getSaveFileName(
+            self,
+            "Save Image",
+            "",
+            "*.jpg;; \
+                                                           *.png",
+        )
         if filename and self.final_mat is not None:
             cv2.imwrite(filename + extension[1:], self.final_mat)
         else:
-            QMessageBox.information(self, "Error",
-                                    "Unable to save image.", QMessageBox.Ok)
+            QMessageBox.information(
+                self, "Error", "Unable to save image.", QMessageBox.Ok
+            )
 
     def showImage(self):
         display_img_mat = self.final_mat
@@ -294,7 +321,8 @@ class PhotoEditor(QMainWindow):
 
         # scale the image to display
         self.image = self.image.scaled(
-            self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
 
         # get scale ratio
         original_height: int = display_img_mat.shape[0]
@@ -327,8 +355,7 @@ class PhotoEditor(QMainWindow):
         """
         Rotate image 90° clockwise
         """
-        self.image_mat, self.corners = rotate_90_clockwise(
-            self.image_mat, self.corners)
+        self.image_mat, self.corners = rotate_90_clockwise(self.image_mat, self.corners)
 
         self.showImage()
 
@@ -336,8 +363,7 @@ class PhotoEditor(QMainWindow):
         """
         Mirror the image across the horizontal axis
         """
-        self.image_mat, self.corners = flip_horizontal(
-            self.image_mat, self.corners)
+        self.image_mat, self.corners = flip_horizontal(self.image_mat, self.corners)
 
         self.showImage()
 
@@ -345,14 +371,13 @@ class PhotoEditor(QMainWindow):
         """
         Mirror the image across the vertical axis
         """
-        self.image_mat, self.corners = flip_vertical(
-            self.image_mat, self.corners)
+        self.image_mat, self.corners = flip_vertical(self.image_mat, self.corners)
 
         self.showImage()
 
 
 # Run program
-if __name__ == '__main__':
+if __name__ == "__main__":
     appctxt = ApplicationContext()
     window = PhotoEditor()
     exit_code = appctxt.app.exec_()
