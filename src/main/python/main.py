@@ -3,8 +3,6 @@
 import sys
 from typing import Callable, List
 
-from fbs_runtime.application_context.PyQt5 import ApplicationContext
-
 import cv2
 import numpy as np
 from PyQt5.QtCore import QPoint, QSize, Qt
@@ -24,14 +22,16 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from utils import (
+    auto_select_corners,
     convert_ndarray_to_QPixmap,
     crop,
     draw_border,
     flip_horizontal,
     flip_vertical,
-    rotate_90_clockwise,
+    rotate_90_clockwise
 )
 
 
@@ -134,7 +134,7 @@ class PhotoEditor(QMainWindow):
         self.auto_select_btn = QPushButton("Auto select")
         self.auto_select_btn.setMinimumSize(QSize(130, 40))
         self.auto_select_btn.setStatusTip("Auto select corners")
-        self.auto_select_btn.clicked.connect(lambda: 23)
+        self.auto_select_btn.clicked.connect(self.autoSelectCorner)
         dock_v_box.addWidget(self.auto_select_btn)
 
         dock_v_box.addStretch(1)
@@ -244,6 +244,9 @@ class PhotoEditor(QMainWindow):
             self.corner_idx = value
 
         return switchCorner
+
+    def autoSelectCorner(self):
+        self.corners = auto_select_corners(self.image_mat)
 
     def selectCorner(self, event):
         tmp_pos: QPoint = event.pos()

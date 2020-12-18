@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Tuple
 
 import cv2
 import numpy as np
@@ -31,7 +31,9 @@ def add_z_coordinates(pts: np.ndarray):
     return np.hstack([pts, np.ones((nrow, 1))]).astype(pts.dtype)
 
 
-def rotate_90_clockwise(image: np.ndarray, corners: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def rotate_90_clockwise(
+        image: np.ndarray, corners: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Return rotated images and corners
     """
@@ -56,7 +58,9 @@ def rotate_90_clockwise(image: np.ndarray, corners: np.ndarray) -> Tuple[np.ndar
     return rotated_image, rotated_corners
 
 
-def flip_horizontal(image: np.ndarray, corners: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def flip_horizontal(
+        image: np.ndarray, corners: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     height, width = image.shape[:2]
 
     # Create flip matrix
@@ -80,10 +84,12 @@ def flip_horizontal(image: np.ndarray, corners: np.ndarray) -> Tuple[np.ndarray,
         ]
     )
 
-    return flipped_image, flipped_corner_coordinates
+    return flipped_image, flipped_corners
 
 
-def flip_vertical(image: np.ndarray, corners: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def flip_vertical(
+        image: np.ndarray, corners: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     height, width = image.shape[:2]
 
     # Create flip matrix
@@ -107,7 +113,7 @@ def flip_vertical(image: np.ndarray, corners: np.ndarray) -> Tuple[np.ndarray, n
         ]
     )
 
-    return flipped_image, flipped_corner_coordinates
+    return flipped_image, flipped_corners
 
 
 def draw_border(image: np.ndarray, corners: np.ndarray):
@@ -146,3 +152,36 @@ def crop(image: np.ndarray, corners: np.ndarray):
 
     # TODO: increase contrast of new_image
     return new_image
+
+
+def sort_corners(corners: np.ndarray) -> np.ndarray:
+    """Sort corners in this order: top-left top-right bottom-right bottom-left
+
+    Args:
+        corners: ndarray of shape (4, 2) corresponding to 4 corners' coordinates of the document
+
+    Returns:
+        ndarray of shape (4, 2) corresponding to sorted corners
+
+    References:
+        .. [1] https://bretahajek.com/
+    """
+    diff = np.diff(corners, axis=1)
+    total = corners.sum(axis=1)
+    # Top-left point has smallest sum...
+    return np.array([corners[np.argmin(total)],
+                     corners[np.argmin(diff)],
+                     corners[np.argmax(total)],
+                     corners[np.argmax(diff)]])
+
+
+def auto_select_corners(image: np.ndarray) -> np.ndarray:
+    """Automatically select top-left top-right bottom-right bottom-left corners
+
+    Args:
+        image: ndarray of image
+
+    Returns:
+        ndarray of shape (4, 2) corresponding to sorted corners
+    """
+    raise NotImplemented
