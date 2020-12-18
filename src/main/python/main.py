@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from .utils import (
+from utils import (
     convert_ndarray_to_QPixmap,
     crop,
     draw_border,
@@ -62,59 +62,52 @@ class PhotoEditor(QMainWindow):
         self.addToolBar(tool_bar)
 
         # Add actions to toolbar
-        open_act = QAction(QIcon("./icons/file.svg"), "Open", self)
-        open_act.setShortcut("Ctrl+O")
-        open_act.setStatusTip("Open a new image")
-        open_act.triggered.connect(self.openImage)
-        tool_bar.addAction(open_act)
+        self.open_act = QAction(QIcon("../icons/file.svg"), "Open", self)
+        self.open_act.setShortcut("Ctrl+O")
+        self.open_act.setStatusTip("Open a new image")
+        self.open_act.triggered.connect(self.openImage)
+        tool_bar.addAction(self.open_act)
 
-        save_act = QAction(QIcon("./icons/save.svg"), "Save", self)
-        save_act.setShortcut("Ctrl+S")
-        save_act.setStatusTip("Save image")
-        save_act.triggered.connect(self.saveImage)
-        tool_bar.addAction(save_act)
+        self.save_act = QAction(QIcon("../icons/save.svg"), "Save", self)
+        self.save_act.setShortcut("Ctrl+S")
+        self.save_act.setStatusTip("Save image")
+        self.save_act.triggered.connect(self.saveImage)
+        tool_bar.addAction(self.save_act)
 
-        clear_act = QAction(QIcon("./icons/trash.svg"), "Close image", self)
-        clear_act.setShortcut("Ctrl+D")
-        clear_act.setStatusTip("Close image")
-        clear_act.triggered.connect(self.clearImage)
-        tool_bar.addAction(clear_act)
-
-        tool_bar.addSeparator()
-
-        rotate_act = QAction(QIcon("./icons/rotate.svg"), "Rotate 90°", self)
-        rotate_act.setStatusTip("Rotate image 90° clockwise")
-        rotate_act.triggered.connect(self.rotateImage90)
-        tool_bar.addAction(rotate_act)
-
-        flip_h_act = QAction(QIcon("./icons/fliph.svg"), "Flip Horizontal", self)
-        flip_h_act.setStatusTip("Flip image horizontally")
-        flip_h_act.triggered.connect(self.flipImageHorizontal)
-        tool_bar.addAction(flip_h_act)
-
-        flip_r_act = QAction(QIcon("./icons/flipv.svg"), "Flip Vertical", self)
-        flip_r_act.setStatusTip("Flip image vertically")
-        flip_r_act.triggered.connect(self.flipImageVertical)
-        tool_bar.addAction(flip_r_act)
-
-        zoom_act = QAction(QIcon("./icons/zoom.svg"), "Zoom to fit", self)
-        zoom_act.setStatusTip("Zoom image to fit the screen")
-        zoom_act.triggered.connect(self.showImage)
-        tool_bar.addAction(zoom_act)
+        self.clear_act = QAction(QIcon("../icons/trash.svg"), "Close image", self)
+        self.clear_act.setShortcut("Ctrl+D")
+        self.clear_act.setStatusTip("Close image")
+        self.clear_act.triggered.connect(self.clearImage)
+        tool_bar.addAction(self.clear_act)
 
         tool_bar.addSeparator()
 
-        reset_act = QAction(QIcon("./icons/reset.svg"), "Reset image", self)
-        reset_act.setStatusTip("Discard all changes")
-        reset_act.triggered.connect(self.resetImage)
-        tool_bar.addAction(reset_act)
+        self.rotate_act = QAction(QIcon("../icons/rotate.svg"), "Rotate 90°", self)
+        self.rotate_act.setStatusTip("Rotate image 90° clockwise")
+        self.rotate_act.triggered.connect(self.rotateImage90)
+        tool_bar.addAction(self.rotate_act)
+
+        self.flip_h_act = QAction(QIcon("../icons/fliph.svg"), "Flip Horizontal", self)
+        self.flip_h_act.setStatusTip("Flip image horizontally")
+        self.flip_h_act.triggered.connect(self.flipImageHorizontal)
+        tool_bar.addAction(self.flip_h_act)
+
+        self.flip_r_act = QAction(QIcon("../icons/flipv.svg"), "Flip Vertical", self)
+        self.flip_r_act.setStatusTip("Flip image vertically")
+        self.flip_r_act.triggered.connect(self.flipImageVertical)
+        tool_bar.addAction(self.flip_r_act)
+
+        self.zoom_act = QAction(QIcon("../icons/zoom.svg"), "Zoom to fit", self)
+        self.zoom_act.setStatusTip("Zoom image to fit the screen")
+        self.zoom_act.triggered.connect(self.showImage)
+        tool_bar.addAction(self.zoom_act)
 
         tool_bar.addSeparator()
 
-        auto_pick_act = QAction(QIcon("./icons/auto.svg"), "Auto pick", self)
-        auto_pick_act.setStatusTip("Auto pick corners")
-        auto_pick_act.triggered.connect(lambda: 23)  # TODO
-        tool_bar.addAction(auto_pick_act)
+        self.reset_act = QAction(QIcon("../icons/reset.svg"), "Reset image", self)
+        self.reset_act.setStatusTip("Discard all changes")
+        self.reset_act.triggered.connect(self.resetImage)
+        tool_bar.addAction(self.reset_act)
 
         # Display info about tools, menu, and view in the status bar
         self.setStatusBar(QStatusBar(self))
@@ -136,11 +129,19 @@ class PhotoEditor(QMainWindow):
         self.switch_mode_btn.clicked.connect(self.switchMode)
         dock_v_box.addWidget(self.switch_mode_btn)
 
-        dock_v_box.addStretch(1)
+        dock_v_box.addStretch(3)
 
+        self.auto_select_btn = QPushButton("Auto select")
+        self.auto_select_btn.setMinimumSize(QSize(130, 40))
+        self.auto_select_btn.setStatusTip("Auto select corners")
+        self.auto_select_btn.clicked.connect(lambda: 23)
+        dock_v_box.addWidget(self.auto_select_btn)
+
+        dock_v_box.addStretch(1)
         # Add select corner buttons and text to display corner's coordinates
         corner_names = ["Top Left", "Top Right", "Bottom Right", "Bottom Left"]
         self.corner_labels: List[QLabel] = []
+        self.corner_buttons: List[QPushButton] = []
 
         for i in range(4):
             corner_btn = QPushButton(corner_names[i])
@@ -148,6 +149,7 @@ class PhotoEditor(QMainWindow):
             corner_btn.setStatusTip(f"Select {corner_names[i]} corner")
             corner_btn.clicked.connect(self.switchCornerFactory(i))
             dock_v_box.addWidget(corner_btn)
+            self.corner_buttons.append(corner_btn)
 
             corner_label = QLabel()
             corner_label.setText("")
@@ -203,20 +205,37 @@ class PhotoEditor(QMainWindow):
         self.is_edit_mode = not self.is_edit_mode
 
         if self.is_edit_mode:
-            # Change button title
-            self.switch_mode_btn.setText("Preview Mode")
-            self.switch_mode_btn.setStatusTip("Preview result mode")
+            # Change button title to crop
+            self.switch_mode_btn.setText("Crop")
+            self.switch_mode_btn.setStatusTip("Crop document")
 
+            # Disable features
+            self.save_act.setEnabled(False)
             # Enable features
+            self.open_act.setEnabled(True)
+            self.rotate_act.setEnabled(True)
+            self.flip_r_act.setEnabled(True)
+            self.flip_h_act.setEnabled(True)
+            self.auto_select_btn.setEnabled(True)
+            for i in range(4):
+                self.corner_buttons[i].setEnabled(True)
             self.image_label.mousePressEvent = self.selectCorner
         else:
-            # Change button title
-            self.switch_mode_btn.setText("Edit Mode")
+            # Change button title to edit
+            self.switch_mode_btn.setText("Edit")
             self.switch_mode_btn.setStatusTip("Edit image mode")
 
             # Disable features
-
+            self.open_act.setEnabled(False)
+            self.rotate_act.setEnabled(False)
+            self.flip_r_act.setEnabled(False)
+            self.flip_h_act.setEnabled(False)
+            self.auto_select_btn.setEnabled(False)
+            for i in range(4):
+                self.corner_buttons[i].setEnabled(False)
             self.image_label.mousePressEvent = None
+            # Enable features
+            self.save_act.setEnabled(True)
 
         self.showImage()
 
@@ -305,16 +324,14 @@ class PhotoEditor(QMainWindow):
             )
 
     def showImage(self):
-        display_img_mat = self.final_mat
+        if self.image_mat is None:
+            return
 
         if self.is_edit_mode:
             display_img_mat = draw_border(self.image_mat, self.corners)
         else:
             self.final_mat = crop(self.image_mat, self.corners)
             display_img_mat = self.final_mat
-
-        if display_img_mat is None:
-            return
 
         # Convert image_matrix to QPixmap
         self.image = convert_ndarray_to_QPixmap(display_img_mat)
