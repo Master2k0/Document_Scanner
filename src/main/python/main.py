@@ -62,19 +62,19 @@ class PhotoEditor(QMainWindow):
         self.addToolBar(tool_bar)
 
         # Add actions to toolbar
-        self.open_act = QAction(QIcon("../icons/file.svg"), "Open", self)
+        self.open_act = QAction(QIcon("src/main/icons/file.svg"), "Open", self)
         self.open_act.setShortcut("Ctrl+O")
         self.open_act.setStatusTip("Open a new image")
         self.open_act.triggered.connect(self.openImage)
         tool_bar.addAction(self.open_act)
 
-        self.save_act = QAction(QIcon("../icons/save.svg"), "Save", self)
+        self.save_act = QAction(QIcon("src/main/icons/save.svg"), "Save", self)
         self.save_act.setShortcut("Ctrl+S")
         self.save_act.setStatusTip("Save image")
         self.save_act.triggered.connect(self.saveImage)
         tool_bar.addAction(self.save_act)
 
-        self.clear_act = QAction(QIcon("../icons/trash.svg"), "Close image", self)
+        self.clear_act = QAction(QIcon("src/main/icons/trash.svg"), "Close image", self)
         self.clear_act.setShortcut("Ctrl+D")
         self.clear_act.setStatusTip("Close image")
         self.clear_act.triggered.connect(self.clearImage)
@@ -82,29 +82,29 @@ class PhotoEditor(QMainWindow):
 
         tool_bar.addSeparator()
 
-        self.rotate_act = QAction(QIcon("../icons/rotate.svg"), "Rotate 90°", self)
+        self.rotate_act = QAction(QIcon("src/main/icons/rotate.svg"), "Rotate 90°", self)
         self.rotate_act.setStatusTip("Rotate image 90° clockwise")
         self.rotate_act.triggered.connect(self.rotateImage90)
         tool_bar.addAction(self.rotate_act)
 
-        self.flip_h_act = QAction(QIcon("../icons/fliph.svg"), "Flip Horizontal", self)
+        self.flip_h_act = QAction(QIcon("src/main/icons/fliph.svg"), "Flip Horizontal", self)
         self.flip_h_act.setStatusTip("Flip image horizontally")
         self.flip_h_act.triggered.connect(self.flipImageHorizontal)
         tool_bar.addAction(self.flip_h_act)
 
-        self.flip_r_act = QAction(QIcon("../icons/flipv.svg"), "Flip Vertical", self)
+        self.flip_r_act = QAction(QIcon("src/main/icons/flipv.svg"), "Flip Vertical", self)
         self.flip_r_act.setStatusTip("Flip image vertically")
         self.flip_r_act.triggered.connect(self.flipImageVertical)
         tool_bar.addAction(self.flip_r_act)
 
-        self.zoom_act = QAction(QIcon("../icons/zoom.svg"), "Zoom to fit", self)
+        self.zoom_act = QAction(QIcon("src/main/icons/zoom.svg"), "Zoom to fit", self)
         self.zoom_act.setStatusTip("Zoom image to fit the screen")
         self.zoom_act.triggered.connect(self.showImage)
         tool_bar.addAction(self.zoom_act)
 
         tool_bar.addSeparator()
 
-        self.reset_act = QAction(QIcon("../icons/reset.svg"), "Reset image", self)
+        self.reset_act = QAction(QIcon("src/main/icons/reset.svg"), "Reset image", self)
         self.reset_act.setStatusTip("Discard all changes")
         self.reset_act.triggered.connect(self.resetImage)
         tool_bar.addAction(self.reset_act)
