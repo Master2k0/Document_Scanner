@@ -136,12 +136,8 @@ def crop(image: np.ndarray, corners: np.ndarray):
     # corners[2]: bottom right corner
     # corners[3]: bottom left corner
 
-    # TODO: Sort corners
-
-    # height = np.linalg.norm(corners[3] - corners[0])
-    # width = np.linalg.norm(corners[1] - corners[0])
-    height = manhattan(corners[3], corners[0])
-    width = manhattan(corners[1], corners[0])
+    height = np.linalg.norm(corners[3] - corners[0])
+    width = np.linalg.norm(corners[1] - corners[0])
 
     new_corners = np.array(
         [[0, 0], [width, 0], [width, height], [0, height]], dtype=np.float32
