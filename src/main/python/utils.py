@@ -116,13 +116,26 @@ def flip_vertical(
     return flipped_image, flipped_corners
 
 
-def draw_border(image: np.ndarray, corners: np.ndarray):
+def draw_border(image: np.ndarray, corners: np.ndarray) -> np.ndarray:
+    """Draw border of the document in image using corners' coordinates without changing the original image
+
+    Args:
+        image: input image matrix
+        corners: array of size (4, 2) stores coordinates of 4 corners
+
+    Returns:
+        New image with border in it
+    """
     thickness = 20
-    color = (53, 57, 229)
+    color = (0, 255, 0)
     isClosed = True
+    radius = 5
     tmp_image = image.copy()
 
     cv2.polylines(tmp_image, np.int32([corners]), isClosed, color, thickness)
+
+    for corner in corners:
+        tmp_image = cv2.circle(tmp_image, tuple(corner), radius * 8, color, -1)
 
     return tmp_image
 
