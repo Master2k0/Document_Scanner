@@ -317,7 +317,7 @@ class PhotoEditor(QMainWindow):
             "Save Image",
             "",
             "*.jpg;; \
-                                                           *.png",
+             *.png",
         )
         if filename and self.final_mat is not None:
             cv2.imwrite(filename + extension[1:], self.final_mat)
