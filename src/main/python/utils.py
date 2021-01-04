@@ -174,7 +174,15 @@ def sort_corners(corners: np.ndarray) -> np.ndarray:
 
     References:
         .. [1] https://bretahajek.com/
+
+    Notes:
+        This function doesn't work correctly with the following case
+        ([1783 1748] [3349 2000] [2776 3475] [119 2664])
+        TODO: Need optimization for the case mentioned above
     """
+    # Check shape of corners array
+    assert corners.shape == (4, 2)
+
     diff = np.diff(corners, axis=1)
     total = corners.sum(axis=1)
     # Top-left point has smallest sum...
