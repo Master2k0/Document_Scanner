@@ -201,4 +201,49 @@ def auto_select_corners(image: np.ndarray) -> np.ndarray:
     Returns:
         ndarray of shape (4, 2) corresponding to sorted corners
     """
-    raise NotImplemented
+    # CONVERT TO GRAYSCALE AND INCREASE CONTRAST
+    contrast_level = 1.41
+    img = np.clip(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) * contrast_level, 0, 255)
+
+    # CONVERT BACK TO UINT8
+    img = img.astype(np.uint8)
+
+    # RESIZE IMAGE (APPLY FILTER TO SMALLER IMAGE WILL BE FASTER)
+    height, width = img.shape
+    scale_factor = 0.4
+    new_height = int(height * scale_factor)
+    new_width = int(width * scale_factor)
+    img = cv2.resize(img, (new_width, new_height))
+
+    # USE BILATERAL FILTER TO REDUCE NOISE BUT ALSO PRESERVE EDGES
+    img = cv2.bilateralFilter(img, 7, 95, 95)
+
+    # APPLY CANNY EDGE DETECTOR (NEED MORE EXPLANATION)
+    imgThreshold = cv2.Canny(img, 9, 25)
+
+    # APPLY Morphological Operations
+    kernel = np.ones((5, 5))
+    imgDial = cv2.dilate(imgThreshold, kernel, iterations=2)  # APPLY DILATION
+    imgThreshold = cv2.erode(imgDial, kernel, iterations=1)  # APPLY EROSION
+
+    # FIND ALL CONTOURS
+    contours, hierarchy = cv2.findContours(
+        imgThreshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
+
+    # FIND BIGGEST CONTOUR (CONTAINS 4 MAIN CORNERS)
+    biggest = np.array([])
+    max_area = 0
+    for i in contours:
+        area = cv2.contourArea(i)
+        peri = cv2.arcLength(i, True)
+        approx = cv2.approxPolyDP(i, 0.03 * peri, True)
+        if area > max_area and len(approx) == 4:
+            biggest = approx
+            max_area = area
+
+    biggest = biggest.reshape((4, 2))
+
+    # SORT CORNERS AND RESCALE THEM
+    corners = sort_corners(biggest) * (1 / scale_factor)
+    return corners.astype(np.float32)
