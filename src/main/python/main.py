@@ -247,6 +247,7 @@ class PhotoEditor(QMainWindow):
 
     def autoSelectCorner(self):
         self.corners = auto_select_corners(self.image_mat)
+        self.showImage()
 
     def selectCorner(self, event):
         tmp_pos: QPoint = event.pos()
