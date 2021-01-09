@@ -9,7 +9,7 @@ Scan documents using normal camera
 | Trần Hoàng Sơn      | 18521351 |
 | Bạch Văn Hiếu       | 18520730 |
 
-## Features
+## App Features
 1. Rotate image to the left 90 degree
 2. Flip image horizontally
 3. Flip image vertically
@@ -17,9 +17,6 @@ Scan documents using normal camera
 5. Select corners of document automatically
 6. Crop document based on selected corners
 
-## Steps to crop a document
-1. Select 4 corners of document (manually or automatically)
-2. Calculate
 ## Build requirements
 - python 3.6
 - fbs
