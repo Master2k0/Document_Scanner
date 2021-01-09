@@ -17,9 +17,11 @@ Scan documents using normal camera
 5. Select corners of document automatically
 6. Crop document based on selected corners
 
-## Build requirements
-- python 3.6
-- fbs
+## How to run
+- Install python 3.6
+- Install dependencies: ```pip install -r requirements.txt```
+- Change directory into this project: ```cd Document_Scanner```
+- Run app: ```fbs run```
 
 
 ## References
