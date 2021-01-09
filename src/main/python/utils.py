@@ -32,7 +32,7 @@ def add_z_coordinates(pts: np.ndarray) -> np.ndarray:
 
 
 def rotate_90_clockwise(
-        image: np.ndarray, corners: np.ndarray
+    image: np.ndarray, corners: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Return rotated images and corners
@@ -59,7 +59,7 @@ def rotate_90_clockwise(
 
 
 def flip_horizontal(
-        image: np.ndarray, corners: np.ndarray
+    image: np.ndarray, corners: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
     height, width = image.shape[:2]
 
@@ -88,7 +88,7 @@ def flip_horizontal(
 
 
 def flip_vertical(
-        image: np.ndarray, corners: np.ndarray
+    image: np.ndarray, corners: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
     height, width = image.shape[:2]
 
@@ -186,10 +186,14 @@ def sort_corners(corners: np.ndarray) -> np.ndarray:
     diff = np.diff(corners, axis=1)
     total = corners.sum(axis=1)
     # Top-left point has smallest sum...
-    return np.array([corners[np.argmin(total)],
-                     corners[np.argmin(diff)],
-                     corners[np.argmax(total)],
-                     corners[np.argmax(diff)]])
+    return np.array(
+        [
+            corners[np.argmin(total)],
+            corners[np.argmin(diff)],
+            corners[np.argmax(total)],
+            corners[np.argmax(diff)],
+        ]
+    )
 
 
 def auto_select_corners(image: np.ndarray) -> np.ndarray:
@@ -202,7 +206,7 @@ def auto_select_corners(image: np.ndarray) -> np.ndarray:
         ndarray of shape (4, 2) corresponding to sorted corners
     """
     # CONVERT TO GRAYSCALE AND INCREASE CONTRAST
-    contrast_level = 1.41
+    contrast_level = 1.5
     img = np.clip(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) * contrast_level, 0, 255)
 
     # CONVERT BACK TO UINT8
@@ -216,10 +220,10 @@ def auto_select_corners(image: np.ndarray) -> np.ndarray:
     img = cv2.resize(img, (new_width, new_height))
 
     # USE BILATERAL FILTER TO REDUCE NOISE BUT ALSO PRESERVE EDGES
-    img = cv2.bilateralFilter(img, 7, 95, 95)
+    img = cv2.bilateralFilter(img, 7, 121, 121)
 
     # APPLY CANNY EDGE DETECTOR (NEED MORE EXPLANATION)
-    imgThreshold = cv2.Canny(img, 9, 25)
+    imgThreshold = cv2.Canny(img, 9, 50)
 
     # APPLY Morphological Operations
     kernel = np.ones((5, 5))
@@ -227,12 +231,14 @@ def auto_select_corners(image: np.ndarray) -> np.ndarray:
     imgThreshold = cv2.erode(imgDial, kernel, iterations=1)  # APPLY EROSION
 
     # FIND ALL CONTOURS
-    contours, hierarchy = cv2.findContours(
+    contours, _ = cv2.findContours(
         imgThreshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
 
     # FIND BIGGEST CONTOUR (CONTAINS 4 MAIN CORNERS)
-    biggest = np.array([])
+    biggest = np.array(
+        [[0, 0], [new_width, 0], [new_width, new_height], [0, new_height]]
+    )  # Default contour if no contour is found
     max_area = 0
     for i in contours:
         area = cv2.contourArea(i)
