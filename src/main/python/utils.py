@@ -19,10 +19,6 @@ def convert_ndarray_to_QPixmap(image_matrix: np.ndarray) -> QPixmap:
     return QPixmap.fromImage(qImg)
 
 
-def manhattan(a: np.ndarray, b: np.ndarray) -> float:
-    return np.abs(b - a).sum()
-
-
 def add_z_coordinates(pts: np.ndarray) -> np.ndarray:
     nrow, ncol = pts.shape[:2]
 
