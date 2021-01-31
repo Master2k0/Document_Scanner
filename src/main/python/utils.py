@@ -155,8 +155,13 @@ def crop(image: np.ndarray, corners: np.ndarray):
     transform_mat = cv2.getPerspectiveTransform(corners, new_corners)
     new_image = cv2.warpPerspective(image, transform_mat, (width, height))
 
-    # TODO: increase contrast of new_image
-    return new_image
+    # Make the document's text clearer
+    new_image_gray = cv2.cvtColor(new_image, cv2.COLOR_BGR2GRAY)
+    new_image_gray = cv2.adaptiveThreshold(new_image_gray, 255, 1, 1, 7, 2)
+    new_image_gray = cv2.bitwise_not(new_image_gray)
+    new_image_gray = cv2.medianBlur(new_image_gray, 3)
+    
+    return new_image_gray
 
 
 def sort_corners(corners: np.ndarray) -> np.ndarray:
