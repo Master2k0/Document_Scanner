@@ -156,12 +156,12 @@ def crop(image: np.ndarray, corners: np.ndarray):
     new_image = cv2.warpPerspective(image, transform_mat, (width, height))
 
     # Make the document's text clearer
-    new_image_gray = cv2.cvtColor(new_image, cv2.COLOR_BGR2GRAY)
-    new_image_gray = cv2.adaptiveThreshold(new_image_gray, 255, 1, 1, 7, 2)
-    new_image_gray = cv2.bitwise_not(new_image_gray)
-    new_image_gray = cv2.medianBlur(new_image_gray, 3)
+    # new_image_gray = cv2.cvtColor(new_image, cv2.COLOR_BGR2GRAY)
+    # new_image_gray = cv2.adaptiveThreshold(new_image_gray, 255, 1, 1, 7, 2)
+    # new_image_gray = cv2.bitwise_not(new_image_gray)
+    # new_image_gray = cv2.medianBlur(new_image_gray, 3)
     
-    return new_image_gray
+    return new_image
 
 
 def sort_corners(corners: np.ndarray) -> np.ndarray:
