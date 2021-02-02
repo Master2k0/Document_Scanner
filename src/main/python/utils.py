@@ -75,8 +75,8 @@ def flip_horizontal(
         [
             flipped_corner_coordinates[1],
             flipped_corner_coordinates[0],
-            flipped_corner_coordinates[2],
             flipped_corner_coordinates[3],
+            flipped_corner_coordinates[2],
         ]
     )
 
