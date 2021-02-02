@@ -303,6 +303,7 @@ class PhotoEditor(QMainWindow):
             return
 
         self.final_mat: np.ndarray = self.image_mat.copy()
+        self.original_image = self.image_mat.copy()
         self.initCornersPoint()
 
         self.is_edit_mode: bool = False
@@ -368,7 +369,8 @@ class PhotoEditor(QMainWindow):
         self.corner_idx = None
 
     def resetImage(self):
-        self.final_mat = self.image_mat
+        self.image_mat = self.original_image
+        self.final_mat = self.original_image
         self.initCornersPoint()
         self.showImage()
 
