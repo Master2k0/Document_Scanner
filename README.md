@@ -1,6 +1,6 @@
 # Document Scanner app
 
-Scan documents using normal camera
+Scan document from any image
 
 ## Members
 | Full Name           | ID       |
@@ -17,11 +17,21 @@ Scan documents using normal camera
 5. Select corners of document automatically
 6. Crop document based on selected corners
 
-## How to run
-- Install python 3.6
-- Install dependencies: ```pip install -r requirements.txt```
-- Change directory into this project: ```cd Document_Scanner```
-- Run app: ```fbs run```
+## Installation
+
+### Windows
+1. Download DocumentScanner_Windows.zip from the Release page and extract it
+2. Run DocumentScanner.exe
+
+### Linux
+1. Download DocumentScanner_Linux.zip from the Release page and extract it
+2. Run DocumentScanner
+
+### Source code
+1. Install python 3.6
+2. Install dependencies: ```pip install -r requirements.txt```
+3. Change directory to the folder containing the main program: ```cd Document_Scanner/src/main/python```
+4. Run app: ```python main.py```
 
 
 ## References
