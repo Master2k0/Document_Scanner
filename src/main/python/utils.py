@@ -1,3 +1,6 @@
+# utils.py
+# This file contains all the operations (rotation, detect corners, etc.)
+
 from typing import Tuple
 
 import cv2

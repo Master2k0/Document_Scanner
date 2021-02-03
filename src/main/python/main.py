@@ -1,4 +1,5 @@
 # main.py
+# This file contains code to create the main interface
 
 import sys
 from typing import Callable, List
